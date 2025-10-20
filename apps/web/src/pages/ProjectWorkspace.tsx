@@ -6,13 +6,10 @@ import {
   FileText,
   Settings,
   Download,
-  Trash2,
   Home,
   Check,
   Loader2,
   AlertCircle,
-  GripVertical,
-  Edit2,
   Moon,
   Sun,
 } from 'lucide-react';
@@ -24,6 +21,22 @@ import { useTheme } from '@/contexts/ThemeContext';
 import Loading from '@/components/ui/Loading';
 import WYSIWYGEditor from '@/components/Editor/WYSIWYGEditor';
 import SearchBar from '@/components/SearchBar';
+import SortablePageItem from '@/components/SortablePageItem';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import toast from 'react-hot-toast';
 
 // Types
@@ -50,8 +63,15 @@ export default function ProjectWorkspace() {
   const [isCreatePageModalOpen, setIsCreatePageModalOpen] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSection, setNewPageSection] = useState('');
-  const [editingPageId, setEditingPageId] = useState<string | null>(null);
-  const [editingTitle, setEditingTitle] = useState('');
+  const [localPages, setLocalPages] = useState<Page[]>([]);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch project
   const { data: project } = useQuery({
@@ -172,14 +192,47 @@ export default function ProjectWorkspace() {
     }
   };
 
-  const handleRenamePageSave = () => {
-    if (editingPageId && editingTitle.trim()) {
-      updatePageMutation.mutate({
-        id: editingPageId,
-        data: { title: editingTitle },
-      });
-      setEditingPageId(null);
+  // Sync local pages with server data
+  useEffect(() => {
+    if (pagesData?.data) {
+      setLocalPages(pagesData.data);
     }
+  }, [pagesData]);
+
+  // Handle drag end
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = localPages.findIndex((p) => p._id === active.id);
+      const newIndex = localPages.findIndex((p) => p._id === over.id);
+
+      const newOrder = arrayMove(localPages, oldIndex, newIndex);
+      setLocalPages(newOrder);
+
+      // Update order on server
+      newOrder.forEach((page, index) => {
+        if (page.order !== index) {
+          updatePageMutation.mutate({
+            id: page._id,
+            data: { order: index },
+          });
+        }
+      });
+    }
+  };
+
+  const handleRename = (pageId: string, newTitle: string) => {
+    // Optimistically update local state
+    setLocalPages((pages) =>
+      pages.map((p) => (p._id === pageId ? { ...p, title: newTitle } : p))
+    );
+
+    // Update on server
+    updatePageMutation.mutate({
+      id: pageId,
+      data: { title: newTitle },
+    });
   };
 
   const handleDeletePage = (id: string, title: string) => {
@@ -225,7 +278,7 @@ export default function ProjectWorkspace() {
   };
 
   // Group pages by section
-  const pages = pagesData?.data || [];
+  const pages = localPages;
   const sections: { [key: string]: Page[] } = {};
   pages.forEach((page: Page) => {
     const section = page.section || 'General';
@@ -306,92 +359,55 @@ export default function ProjectWorkspace() {
             </div>
 
             {/* Pages List - Organized by Sections */}
-            <div className="flex-1 overflow-y-auto p-2">
-              {Object.keys(sections).length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-neutral-500 text-center py-8">No pages yet</p>
-              ) : (
-                Object.entries(sections).map(([sectionName, sectionPages]) => (
-                  <div key={sectionName} className="mb-4">
-                    {/* Section Header */}
-                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-600 dark:text-neutral-400 uppercase tracking-wider flex items-center justify-between group">
-                      <span>{sectionName}</span>
-                      <button
-                        onClick={() => {
-                          setNewPageSection(sectionName);
-                          setIsCreatePageModalOpen(true);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center text-gray-500 hover:text-emerald-500 transition-all"
-                        title="Add page to section"
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="flex-1 overflow-y-auto p-2">
+                {Object.keys(sections).length === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-neutral-500 text-center py-8">No pages yet</p>
+                ) : (
+                  Object.entries(sections).map(([sectionName, sectionPages]) => (
+                    <div key={sectionName} className="mb-4">
+                      {/* Section Header */}
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-600 dark:text-neutral-400 uppercase tracking-wider flex items-center justify-between group">
+                        <span>{sectionName}</span>
+                        <button
+                          onClick={() => {
+                            setNewPageSection(sectionName);
+                            setIsCreatePageModalOpen(true);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center text-gray-500 hover:text-emerald-500 transition-all"
+                          title="Add page to section"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Sortable Section Pages */}
+                      <SortableContext
+                        items={sectionPages.map((p) => p._id)}
+                        strategy={verticalListSortingStrategy}
                       >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Section Pages with Visual Hierarchy */}
-                    <div className="space-y-0.5">
-                      {sectionPages.map((page) => (
-                        <div key={page._id} className="relative group">
-                          {/* Vertical line for subsections */}
-                          <div className="absolute left-2 top-0 bottom-0 w-px bg-gray-200 dark:bg-neutral-800" />
-                          
-                          <div
-                            onClick={() => setSelectedPageId(page._id)}
-                            className={`relative flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors ${
-                              selectedPageId === page._id
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                : 'text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800'
-                            }`}
-                          >
-                            <GripVertical className="w-4 h-4 opacity-0 group-hover:opacity-100 cursor-grab" />
-                            <FileText className="w-4 h-4 flex-shrink-0" />
-                            
-                            {editingPageId === page._id ? (
-                              <input
-                                type="text"
-                                value={editingTitle}
-                                onChange={(e) => setEditingTitle(e.target.value)}
-                                onBlur={handleRenamePageSave}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') handleRenamePageSave();
-                                  if (e.key === 'Escape') setEditingPageId(null);
-                                }}
-                                className="flex-1 text-sm bg-transparent border-none outline-none"
-                                autoFocus
-                              />
-                            ) : (
-                              <span className="flex-1 text-sm font-medium truncate">{page.title}</span>
-                            )}
-
-                            {/* Actions */}
-                            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingPageId(page._id);
-                                  setEditingTitle(page.title);
-                                }}
-                                className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white"
-                              >
-                                <Edit2 className="w-3 h-3" />
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeletePage(page._id, page.title);
-                                }}
-                                className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            </div>
-                          </div>
+                        <div className="space-y-0.5">
+                          {sectionPages.map((page) => (
+                            <SortablePageItem
+                              key={page._id}
+                              page={page}
+                              isSelected={selectedPageId === page._id}
+                              onSelect={() => setSelectedPageId(page._id)}
+                              onRename={(newTitle) => handleRename(page._id, newTitle)}
+                              onDelete={() => handleDeletePage(page._id, page.title)}
+                            />
+                          ))}
                         </div>
-                      ))}
+                      </SortableContext>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
+                  ))
+                )}
+              </div>
+            </DndContext>
 
             {/* Keyboard Shortcuts Info */}
             <div className="p-3 border-t border-gray-200 dark:border-neutral-800 text-xs text-gray-500 dark:text-neutral-500 space-y-1">
