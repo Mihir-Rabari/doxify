@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
@@ -10,22 +10,13 @@ import {
   Eye,
   Code,
   Home,
-  Menu,
-  X,
   Check,
   Loader2,
   AlertCircle,
-  ChevronRight,
-  ChevronDown,
   GripVertical,
-  MoreVertical,
   Edit2,
-  Save,
   Moon,
   Sun,
-  Command,
-  Search,
-  ExternalLink,
 } from 'lucide-react';
 import { projectService } from '@/services/projectService';
 import { pageService } from '@/services/pageService';
@@ -52,7 +43,6 @@ interface Page {
 export default function ProjectWorkspace() {
   const { projectId } = useParams<{ projectId: string }>();
   const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
@@ -60,7 +50,6 @@ export default function ProjectWorkspace() {
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [tocOpen, setTocOpen] = useState(true);
   const [isCreatePageModalOpen, setIsCreatePageModalOpen] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSection, setNewPageSection] = useState('');
@@ -68,7 +57,6 @@ export default function ProjectWorkspace() {
   const [editingTitle, setEditingTitle] = useState('');
   const [showCommandMenu, setShowCommandMenu] = useState(false);
   const [commandMenuPosition, setCommandMenuPosition] = useState({ top: 0, left: 0 });
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch project
   const { data: project } = useQuery({
@@ -114,11 +102,10 @@ export default function ProjectWorkspace() {
         autoSave.manualSave();
         toast.success('Saved!');
       }
-      // Cmd/Ctrl + K to open command menu
+      // Cmd/Ctrl + K for command palette (future feature)
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setSearchQuery('');
-        // Toggle search focus
+        // Command palette will be implemented
       }
       // Cmd/Ctrl + E to toggle preview
       if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
@@ -131,7 +118,7 @@ export default function ProjectWorkspace() {
         setSidebarOpen(!sidebarOpen);
       }
       // / to open command menu in editor
-      if (e.key === '/' && editorRef.current === document.activeElement) {
+      if (e.key === '/' && editorRef.current === document.activeElement && editorRef.current) {
         const textarea = editorRef.current;
         const cursorPosition = textarea.selectionStart;
         const textBeforeCursor = textarea.value.substring(0, cursorPosition);
@@ -210,7 +197,6 @@ export default function ProjectWorkspace() {
         projectId,
         title: newPageTitle,
         content: `# ${newPageTitle}\n\nStart writing...`,
-        section: newPageSection || undefined,
       });
     }
   };
@@ -271,7 +257,7 @@ export default function ProjectWorkspace() {
     }
     
     const newContent = textBefore + blockContent + textAfter;
-    autoSave.handleChange(newContent);
+    autoSave.setContent(newContent);
     setShowCommandMenu(false);
   };
 
@@ -501,8 +487,8 @@ export default function ProjectWorkspace() {
                 </div>
                 <textarea
                   ref={editorRef}
-                  value={autoSave.currentValue}
-                  onChange={(e) => autoSave.handleChange(e.target.value)}
+                  value={autoSave.content}
+                  onChange={(e) => autoSave.setContent(e.target.value)}
                   className="flex-1 w-full p-6 bg-white dark:bg-[#0B0B0B] text-gray-900 dark:text-white font-mono text-sm resize-none focus:outline-none"
                   placeholder="Start writing..."
                 />
@@ -512,7 +498,7 @@ export default function ProjectWorkspace() {
               {showPreview && (
                 <div className="overflow-y-auto">
                   <div className="p-6 prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown>{autoSave.currentValue}</ReactMarkdown>
+                    <ReactMarkdown>{autoSave.content}</ReactMarkdown>
                   </div>
                 </div>
               )}
