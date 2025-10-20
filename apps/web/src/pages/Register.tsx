@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { FileText, ArrowRight, Sparkles } from 'lucide-react';
+import { FileText, ArrowRight } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
-import Input from '@/components/ui/Input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Particles } from '@/components/ui/particles';
 import toast from 'react-hot-toast';
 
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
 
@@ -24,130 +22,145 @@ export default function Register() {
       navigate('/dashboard');
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
-      toast.error(errorMessage);
-      console.error('Registration error:', error);
+      toast.error(error.response?.data?.message || 'Registration failed');
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
-    if (!name.trim()) {
-      toast.error('Please enter your name');
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
       return;
     }
-    if (!email.trim()) {
-      toast.error('Please enter your email');
-      return;
-    }
+
     if (password.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
     }
-    
-    registerMutation.mutate({ name: name.trim(), email: email.trim().toLowerCase(), password });
+
+    registerMutation.mutate({ name, email, password });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
-      <Particles className="absolute inset-0" quantity={50} />
-      
-      <div className="relative flex items-center justify-center min-h-screen p-4">
-        <div className="max-w-md w-full">
-          {/* Logo */}
-          <div className="text-center mb-8 space-y-4">
-            <Link to="/" className="inline-flex items-center gap-3 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl blur-md opacity-50" />
-                <div className="relative bg-gradient-to-br from-primary-500 to-primary-600 p-3 rounded-xl group-hover:scale-110 transition-transform">
-                  <FileText className="w-7 h-7 text-white" />
-                </div>
-              </div>
-              <span className="text-3xl font-black bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
-                Doxify
-              </span>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create your account</h1>
-              <p className="text-gray-600 dark:text-gray-400">Start building beautiful docs in minutes</p>
+    <div className="min-h-screen bg-white dark:bg-[#0B0B0B] flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 group mb-8">
+            <div className="p-2 rounded-xl bg-emerald-500/10">
+              <FileText className="w-6 h-6 text-emerald-500" />
             </div>
-          </div>
-
-          {/* Register Form */}
-          <Card className="shadow-2xl border-2 backdrop-blur-sm bg-white/95 dark:bg-slate-900/95">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary-600" />
-                Get started for free
-              </CardTitle>
-              <CardDescription>No credit card required • 14-day free trial</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <Input
-                  label="Full Name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                />
-                <Input
-                  label="Email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                />
-                <Input
-                  label="Password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="submit"
-                  disabled={registerMutation.isPending}
-                  className="group w-full px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-xl shadow-medium hover:shadow-glow transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {registerMutation.isPending ? (
-                    'Creating account...'
-                  ) : (
-                    <>
-                      Create Account
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Already have an account?{' '}
-                  <Link to="/login" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
-                    Sign in
-                  </Link>
-                </p>
-              </div>
-
-              <div className="mt-4 text-center">
-                <Link to="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                  ← Back to home
-                </Link>
-              </div>
-
-              <p className="mt-6 text-xs text-center text-gray-500 dark:text-gray-400">
-                By creating an account, you agree to our Terms of Service and Privacy Policy
-              </p>
-            </CardContent>
-          </Card>
+            <span className="text-2xl font-semibold text-gray-900 dark:text-white">Doxify</span>
+          </Link>
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white mt-8 mb-2 tracking-tight">
+            Create your account
+          </h1>
+          <p className="text-gray-600 dark:text-neutral-400">Start building beautiful documentation</p>
         </div>
+
+        {/* Register Card */}
+        <div className="border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 rounded-2xl p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
+                required
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
+                required
+                minLength={6}
+              />
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
+                required
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={registerMutation.isPending}
+              className="w-full h-10 bg-emerald-500 hover:bg-emerald-600 text-black font-medium rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              {registerMutation.isPending ? (
+                'Creating account...'
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer Links */}
+          <div className="mt-6 text-center space-y-3">
+            <p className="text-sm text-gray-600 dark:text-neutral-400">
+              Already have an account?{' '}
+              <Link to="/login" className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline">
+                Sign in
+              </Link>
+            </p>
+            <Link to="/" className="block text-sm text-gray-500 dark:text-neutral-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+              ← Back to home
+            </Link>
+          </div>
+        </div>
+
+        {/* Terms */}
+        <p className="text-xs text-center text-gray-500 dark:text-neutral-500 mt-6">
+          By creating an account, you agree to our{' '}
+          <a href="#" className="underline hover:text-gray-900 dark:hover:text-white">Terms of Service</a>
+          {' '}and{' '}
+          <a href="#" className="underline hover:text-gray-900 dark:hover:text-white">Privacy Policy</a>
+        </p>
       </div>
     </div>
   );
