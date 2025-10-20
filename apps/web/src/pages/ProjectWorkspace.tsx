@@ -23,6 +23,7 @@ import { useAutoSave } from '@/hooks/useAutoSave';
 import { useTheme } from '@/contexts/ThemeContext';
 import Loading from '@/components/ui/Loading';
 import WYSIWYGEditor from '@/components/Editor/WYSIWYGEditor';
+import SearchBar from '@/components/SearchBar';
 import toast from 'react-hot-toast';
 
 // Types
@@ -284,7 +285,7 @@ export default function ProjectWorkspace() {
         {sidebarOpen && (
           <div className="w-64 border-r border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#0C0C0C] flex flex-col">
             {/* Sidebar Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-neutral-800">
+            <div className="p-4 border-b border-gray-200 dark:border-neutral-800 space-y-3">
               <button
                 onClick={() => setIsCreatePageModalOpen(true)}
                 className="w-full h-9 bg-emerald-500 hover:bg-emerald-600 text-black text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -292,6 +293,12 @@ export default function ProjectWorkspace() {
                 <Plus className="w-4 h-4" />
                 New Page
               </button>
+              
+              {/* Search Bar */}
+              <SearchBar
+                pages={pages}
+                onSelectPage={(pageId: string) => setSelectedPageId(pageId)}
+              />
             </div>
 
             {/* Pages List - Organized by Sections */}
@@ -401,11 +408,11 @@ export default function ProjectWorkspace() {
         )}
 
         {/* Editor Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col">
           {selectedPage ? (
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col overflow-hidden">
               {/* Page Header */}
-              <div className="px-6 pt-6 pb-3 border-b border-gray-200 dark:border-neutral-800">
+              <div className="flex-shrink-0 px-6 pt-6 pb-3 border-b border-gray-200 dark:border-neutral-800">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedPage.title}</h2>
                 <p className="text-xs text-gray-500 dark:text-neutral-500 mt-1.5">
                   Type <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-neutral-800 rounded text-xs">/</kbd> for commands • 
@@ -414,7 +421,7 @@ export default function ProjectWorkspace() {
               </div>
 
               {/* WYSIWYG Editor */}
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden bg-white dark:bg-[#0B0B0B]">
                 <WYSIWYGEditor
                   content={autoSave.content}
                   onChange={(content) => autoSave.setContent(content)}
