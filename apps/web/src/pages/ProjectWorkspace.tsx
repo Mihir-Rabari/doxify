@@ -414,7 +414,7 @@ export default function ProjectWorkspace() {
               </div>
 
               {/* WYSIWYG Editor */}
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 overflow-y-auto">
                 <WYSIWYGEditor
                   content={autoSave.content}
                   onChange={(content) => autoSave.setContent(content)}
