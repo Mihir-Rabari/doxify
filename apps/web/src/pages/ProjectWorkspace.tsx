@@ -239,15 +239,17 @@ export default function ProjectWorkspace() {
     <div className="h-screen flex flex-col bg-white dark:bg-[#0B0B0B]">
       {/* Top Navbar */}
       <nav className="h-[60px] bg-white dark:bg-[#0C0C0C] border-b border-gray-200 dark:border-neutral-800 flex items-center justify-between px-6">
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-4">
           <Link to="/dashboard" className="w-9 h-9 flex items-center justify-center text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
             <Home className="w-5 h-5" />
           </Link>
           <div className="h-6 w-px bg-gray-200 dark:bg-neutral-800" />
           <h1 className="text-base font-semibold text-gray-900 dark:text-white">{project?.name}</h1>
-          
-          {/* Search Bar in Navbar */}
-          <div className="flex-1 max-w-md ml-8">
+        </div>
+
+        {/* Centered Search Bar */}
+        <div className="flex-1 flex justify-center px-8">
+          <div className="w-full max-w-md">
             <SearchBar
               pages={pages}
               onSelectPage={(pageId: string) => setSelectedPageId(pageId)}
