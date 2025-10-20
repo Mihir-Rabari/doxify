@@ -57,11 +57,11 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
       {/* Search Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
       >
-        <Search className="w-4 h-4" />
-        <span>Search pages...</span>
-        <kbd className="ml-auto px-2 py-0.5 text-xs bg-white dark:bg-gray-900 rounded border border-gray-300 dark:border-gray-700">
+        <Search className="w-4 h-4 flex-shrink-0" />
+        <span className="flex-1 text-left">Search pages...</span>
+        <kbd className="px-1.5 py-0.5 text-xs bg-white dark:bg-neutral-900 rounded border border-gray-300 dark:border-neutral-700 text-gray-500 dark:text-neutral-500">
           ⌘K
         </kbd>
       </button>
@@ -70,29 +70,29 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             onClick={() => setIsOpen(false)}
           />
           <div className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 px-4">
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden">
               {/* Search Input */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-                <Search className="w-5 h-5 text-gray-400" />
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-neutral-800">
+                <Search className="w-5 h-5 text-gray-400 dark:text-neutral-500" />
                 <input
                   ref={inputRef}
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search pages by title or content..."
-                  className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
+                  className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none"
                   autoFocus
                 />
                 {query && (
                   <button
                     onClick={() => setQuery('')}
-                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded transition-colors"
                   >
-                    <X className="w-4 h-4 text-gray-400" />
+                    <X className="w-4 h-4 text-gray-400 dark:text-neutral-500" />
                   </button>
                 )}
               </div>
@@ -100,7 +100,7 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
               {/* Results */}
               <div className="max-h-96 overflow-y-auto">
                 {query && results.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  <div className="p-8 text-center text-gray-500 dark:text-neutral-400">
                     No pages found for "{query}"
                   </div>
                 ) : results.length > 0 ? (
@@ -109,13 +109,13 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
                       <button
                         key={page._id}
                         onClick={() => handleSelect(page._id)}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors group"
                       >
-                        <div className="font-medium text-gray-900 dark:text-white">
+                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                           {page.title}
                         </div>
                         {page.content && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mt-1">
+                          <div className="text-sm text-gray-500 dark:text-neutral-400 line-clamp-1 mt-1">
                             {page.content.substring(0, 100)}...
                           </div>
                         )}
@@ -123,10 +123,10 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  <div className="p-8 text-center text-gray-500 dark:text-neutral-400">
                     <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p>Start typing to search pages...</p>
-                    <p className="text-xs mt-2">Press <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">ESC</kbd> to close</p>
+                    <p className="text-xs mt-2">Press <kbd className="px-2 py-1 bg-gray-100 dark:bg-neutral-800 rounded">ESC</kbd> to close</p>
                   </div>
                 )}
               </div>

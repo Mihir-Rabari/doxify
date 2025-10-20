@@ -239,12 +239,20 @@ export default function ProjectWorkspace() {
     <div className="h-screen flex flex-col bg-white dark:bg-[#0B0B0B]">
       {/* Top Navbar */}
       <nav className="h-[60px] bg-white dark:bg-[#0C0C0C] border-b border-gray-200 dark:border-neutral-800 flex items-center justify-between px-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-1">
           <Link to="/dashboard" className="w-9 h-9 flex items-center justify-center text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
             <Home className="w-5 h-5" />
           </Link>
           <div className="h-6 w-px bg-gray-200 dark:bg-neutral-800" />
           <h1 className="text-base font-semibold text-gray-900 dark:text-white">{project?.name}</h1>
+          
+          {/* Search Bar in Navbar */}
+          <div className="flex-1 max-w-md ml-8">
+            <SearchBar
+              pages={pages}
+              onSelectPage={(pageId: string) => setSelectedPageId(pageId)}
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -285,7 +293,7 @@ export default function ProjectWorkspace() {
         {sidebarOpen && (
           <div className="w-64 border-r border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#0C0C0C] flex flex-col">
             {/* Sidebar Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-neutral-800 space-y-3">
+            <div className="p-4 border-b border-gray-200 dark:border-neutral-800">
               <button
                 onClick={() => setIsCreatePageModalOpen(true)}
                 className="w-full h-9 bg-emerald-500 hover:bg-emerald-600 text-black text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -293,12 +301,6 @@ export default function ProjectWorkspace() {
                 <Plus className="w-4 h-4" />
                 New Page
               </button>
-              
-              {/* Search Bar */}
-              <SearchBar
-                pages={pages}
-                onSelectPage={(pageId: string) => setSelectedPageId(pageId)}
-              />
             </div>
 
             {/* Pages List - Organized by Sections */}
