@@ -1,0 +1,114 @@
+services:
+  # API Gateway
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - AUTH_SERVICE_URL=http://auth-service:4001
+      - PROJECTS_SERVICE_URL=http://projects-service:4002
+      - PAGES_SERVICE_URL=http://pages-service:4003
+      - PARSER_SERVICE_URL=http://parser-service:4004
+      - THEME_SERVICE_URL=http://theme-service:4005
+      - EXPORT_SERVICE_URL=http://export-service:4006
+    depends_on:
+      - auth-service
+      - projects-service
+      - pages-service
+      - parser-service
+      - theme-service
+      - export-service
+    networks:
+      - doxify-network
+    container_name: doxify-api-gateway
+
+  # Auth Service
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "4001:4001"
+    environment:
+      - PORT=4001
+      - MONGODB_URI=mongodb://host.docker.internal:27017/doxify
+      - JWT_SECRET=doxify-secret-key-change-in-production
+      - JWT_EXPIRES_IN=7d
+    networks:
+      - doxify-network
+    container_name: doxify-auth-service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Projects Service
+  projects-service:
+    build: ./services/projects-service
+    ports:
+      - "4002:4002"
+    environment:
+      - PORT=4002
+      - MONGODB_URI=mongodb://host.docker.internal:27017/doxify
+    networks:
+      - doxify-network
+    container_name: doxify-projects-service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Pages Service
+  pages-service:
+    build: ./services/pages-service
+    ports:
+      - "4003:4003"
+    environment:
+      - PORT=4003
+      - MONGODB_URI=mongodb://host.docker.internal:27017/doxify
+      - PARSER_SERVICE_URL=http://parser-service:4004
+    depends_on:
+      - parser-service
+    networks:
+      - doxify-network
+    container_name: doxify-pages-service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Parser Service
+  parser-service:
+    build: ./services/parser-service
+    ports:
+      - "4004:4004"
+    environment:
+      - PORT=4004
+    networks:
+      - doxify-network
+    container_name: doxify-parser-service
+
+  # Theme Service
+  theme-service:
+    build: ./services/theme-service
+    ports:
+      - "4005:4005"
+    environment:
+      - PORT=4005
+      - MONGODB_URI=mongodb://host.docker.internal:27017/doxify
+    networks:
+      - doxify-network
+    container_name: doxify-theme-service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Export Service
+  export-service:
+    build: ./services/export-service
+    ports:
+      - "4006:4006"
+    environment:
+      - PORT=4006
+      - MONGODB_URI=mongodb://host.docker.internal:27017/doxify
+    networks:
+      - doxify-network
+    container_name: doxify-export-service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  doxify-network:
+    driver: bridge
