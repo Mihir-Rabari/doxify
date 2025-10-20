@@ -73,8 +73,8 @@ export default function WYSIWYGEditor({
   }
 
   return (
-    <div className="wysiwyg-editor h-full overflow-y-auto">
-      <EditorContent editor={editor} />
+    <div className="wysiwyg-editor h-full overflow-y-auto overflow-x-hidden">
+      <EditorContent editor={editor} className="h-full" />
     </div>
   );
 }

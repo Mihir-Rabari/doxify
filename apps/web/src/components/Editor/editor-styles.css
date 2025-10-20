@@ -1,13 +1,14 @@
 /* TipTap WYSIWYG Editor Styles - Vercel Design System */
 
 .wysiwyg-editor {
-  @apply bg-white dark:bg-[#0B0B0B];
+  @apply bg-white dark:bg-[#0B0B0B] h-full overflow-y-auto overflow-x-hidden;
 }
 
 /* Editor Content Container */
 .ProseMirror {
   @apply min-h-full p-6 bg-white dark:bg-[#0B0B0B] text-gray-900 dark:text-white;
   outline: none;
+  height: auto;
 }
 
 /* Placeholder */
