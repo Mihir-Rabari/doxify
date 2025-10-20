@@ -10,21 +10,26 @@ export function useTableOfContents(content: string) {
   const [toc, setToc] = useState<TocItem[]>([]);
 
   useEffect(() => {
-    // Parse markdown headings
-    const headingRegex = /^(#{1,6})\s+(.+)$/gm;
-    const headings: TocItem[] = [];
-    let match;
+    if (!content) {
+      setToc([]);
+      return;
+    }
 
-    while ((match = headingRegex.exec(content)) !== null) {
-      const level = match[1].length;
-      const text = match[2].trim();
+    // Parse HTML headings from TipTap editor
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, 'text/html');
+    const headingElements = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    
+    const headings: TocItem[] = Array.from(headingElements).map((heading) => {
+      const level = parseInt(heading.tagName.substring(1)); // h1 -> 1, h2 -> 2, etc.
+      const text = heading.textContent?.trim() || '';
       const id = text
         .toLowerCase()
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-');
 
-      headings.push({ id, text, level });
-    }
+      return { id, text, level };
+    });
 
     setToc(headings);
   }, [content]);

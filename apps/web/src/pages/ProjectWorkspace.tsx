@@ -22,6 +22,7 @@ import Loading from '@/components/ui/Loading';
 import WYSIWYGEditor from '@/components/Editor/WYSIWYGEditor';
 import SearchBar from '@/components/SearchBar';
 import SortablePageItem from '@/components/SortablePageItem';
+import { TocSidebar } from '@/components/TableOfContents';
 import {
   DndContext,
   closestCenter,
@@ -60,6 +61,7 @@ export default function ProjectWorkspace() {
   // State
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [tocOpen, setTocOpen] = useState(true);
   const [isCreatePageModalOpen, setIsCreatePageModalOpen] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSection, setNewPageSection] = useState('');
@@ -461,6 +463,14 @@ export default function ProjectWorkspace() {
             </div>
           )}
         </div>
+
+        {/* Table of Contents Sidebar */}
+        {selectedPage && (
+          <TocSidebar
+            content={autoSave.content}
+            isOpen={tocOpen}
+          />
+        )}
       </div>
 
 
