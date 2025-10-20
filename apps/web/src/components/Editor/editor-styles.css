@@ -1,0 +1,159 @@
+/* TipTap WYSIWYG Editor Styles - Vercel Design System */
+
+.wysiwyg-editor {
+  @apply bg-white dark:bg-[#0B0B0B];
+}
+
+/* Editor Content Container */
+.ProseMirror {
+  @apply min-h-full p-6 bg-white dark:bg-[#0B0B0B] text-gray-900 dark:text-white;
+  outline: none;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-gray-400 dark:text-neutral-500;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Headings */
+.ProseMirror h1 {
+  @apply text-3xl font-bold text-gray-900 dark:text-white mt-8 mb-4;
+}
+
+.ProseMirror h2 {
+  @apply text-2xl font-semibold text-gray-900 dark:text-white mt-6 mb-3;
+}
+
+.ProseMirror h3 {
+  @apply text-xl font-semibold text-gray-900 dark:text-white mt-4 mb-2;
+}
+
+.ProseMirror h4 {
+  @apply text-lg font-semibold text-gray-900 dark:text-white mt-4 mb-2;
+}
+
+.ProseMirror h5,
+.ProseMirror h6 {
+  @apply text-base font-semibold text-gray-900 dark:text-white mt-3 mb-2;
+}
+
+/* Paragraphs */
+.ProseMirror p {
+  @apply text-gray-700 dark:text-neutral-300 leading-relaxed mb-4;
+}
+
+/* Lists */
+.ProseMirror ul,
+.ProseMirror ol {
+  @apply pl-6 mb-4 space-y-2;
+}
+
+.ProseMirror ul {
+  @apply list-disc;
+}
+
+.ProseMirror ol {
+  @apply list-decimal;
+}
+
+.ProseMirror li {
+  @apply text-gray-700 dark:text-neutral-300;
+}
+
+/* Task Lists */
+.ProseMirror ul[data-type="taskList"] {
+  @apply list-none pl-0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  @apply flex items-start gap-2;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label {
+  @apply flex items-center cursor-pointer;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"] {
+  @apply w-4 h-4 rounded border-gray-300 dark:border-neutral-700 text-emerald-500 focus:ring-emerald-500 cursor-pointer;
+}
+
+/* Code Blocks */
+.ProseMirror pre {
+  @apply bg-gray-100 dark:bg-neutral-900 rounded-lg p-4 mb-4 overflow-x-auto;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
+}
+
+.ProseMirror pre code {
+  @apply text-sm text-gray-800 dark:text-neutral-200;
+  background: none;
+  padding: 0;
+}
+
+/* Inline Code */
+.ProseMirror code {
+  @apply bg-gray-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-sm text-emerald-600 dark:text-emerald-400;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
+}
+
+/* Blockquotes */
+.ProseMirror blockquote {
+  @apply border-l-4 border-emerald-500 pl-4 my-4 italic text-gray-600 dark:text-neutral-400;
+}
+
+/* Horizontal Rule */
+.ProseMirror hr {
+  @apply border-gray-200 dark:border-neutral-800 my-8;
+}
+
+/* Links */
+.ProseMirror a {
+  @apply text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-500 underline cursor-pointer transition-colors;
+}
+
+/* Bold */
+.ProseMirror strong {
+  @apply font-semibold text-gray-900 dark:text-white;
+}
+
+/* Italic */
+.ProseMirror em {
+  @apply italic;
+}
+
+/* Strike */
+.ProseMirror s {
+  @apply line-through;
+}
+
+/* Selection */
+.ProseMirror ::selection {
+  @apply bg-emerald-500/20;
+}
+
+/* Focus */
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Tables (if needed) */
+.ProseMirror table {
+  @apply border-collapse w-full mb-4;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  @apply border border-gray-200 dark:border-neutral-800 px-4 py-2 text-left;
+}
+
+.ProseMirror th {
+  @apply bg-gray-50 dark:bg-neutral-900 font-semibold;
+}
+
+/* Images */
+.ProseMirror img {
+  @apply max-w-full h-auto rounded-lg my-4;
+}

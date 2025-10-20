@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -7,8 +7,6 @@ import {
   Settings,
   Download,
   Trash2,
-  Eye,
-  Code,
   Home,
   Check,
   Loader2,
@@ -24,8 +22,8 @@ import { exportService } from '@/services/exportService';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useTheme } from '@/contexts/ThemeContext';
 import Loading from '@/components/ui/Loading';
+import WYSIWYGEditor from '@/components/Editor/WYSIWYGEditor';
 import toast from 'react-hot-toast';
-import ReactMarkdown from 'react-markdown';
 
 // Types
 interface Page {
@@ -44,19 +42,15 @@ export default function ProjectWorkspace() {
   const { projectId } = useParams<{ projectId: string }>();
   const { theme, toggleTheme } = useTheme();
   const queryClient = useQueryClient();
-  const editorRef = useRef<HTMLTextAreaElement>(null);
 
   // State
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isCreatePageModalOpen, setIsCreatePageModalOpen] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSection, setNewPageSection] = useState('');
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
-  const [showCommandMenu, setShowCommandMenu] = useState(false);
-  const [commandMenuPosition, setCommandMenuPosition] = useState({ top: 0, left: 0 });
 
   // Fetch project
   const { data: project } = useQuery({
@@ -102,40 +96,16 @@ export default function ProjectWorkspace() {
         autoSave.manualSave();
         toast.success('Saved!');
       }
-      // Cmd/Ctrl + K for command palette (future feature)
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        // Command palette will be implemented
-      }
-      // Cmd/Ctrl + E to toggle preview
-      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-        e.preventDefault();
-        setShowPreview(!showPreview);
-      }
       // Cmd/Ctrl + B to toggle sidebar
       if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
         e.preventDefault();
         setSidebarOpen(!sidebarOpen);
       }
-      // / to open command menu in editor
-      if (e.key === '/' && editorRef.current === document.activeElement && editorRef.current) {
-        const textarea = editorRef.current;
-        const cursorPosition = textarea.selectionStart;
-        const textBeforeCursor = textarea.value.substring(0, cursorPosition);
-        const lastLine = textBeforeCursor.split('\n').pop() || '';
-        
-        if (lastLine.trim() === '') {
-          e.preventDefault();
-          setShowCommandMenu(true);
-          const rect = textarea.getBoundingClientRect();
-          setCommandMenuPosition({ top: rect.top, left: rect.left });
-        }
-      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showPreview, sidebarOpen]);
+  }, [sidebarOpen]);
 
   // Create page mutation
   const createPageMutation = useMutation({
@@ -223,43 +193,6 @@ export default function ProjectWorkspace() {
     }
   };
 
-  const insertBlock = (blockType: string) => {
-    if (!editorRef.current) return;
-    
-    const textarea = editorRef.current;
-    const cursorPosition = textarea.selectionStart;
-    const textBefore = textarea.value.substring(0, cursorPosition);
-    const textAfter = textarea.value.substring(cursorPosition);
-    
-    let blockContent = '';
-    switch (blockType) {
-      case 'heading1':
-        blockContent = '# Heading 1\n';
-        break;
-      case 'heading2':
-        blockContent = '## Heading 2\n';
-        break;
-      case 'heading3':
-        blockContent = '### Heading 3\n';
-        break;
-      case 'code':
-        blockContent = '```\ncode here\n```\n';
-        break;
-      case 'list':
-        blockContent = '- List item\n';
-        break;
-      case 'quote':
-        blockContent = '> Quote\n';
-        break;
-      case 'divider':
-        blockContent = '---\n';
-        break;
-    }
-    
-    const newContent = textBefore + blockContent + textAfter;
-    autoSave.setContent(newContent);
-    setShowCommandMenu(false);
-  };
 
   // Render save status
   const renderSaveStatus = () => {
@@ -317,14 +250,6 @@ export default function ProjectWorkspace() {
           {renderSaveStatus()}
           <div className="h-6 w-px bg-gray-200 dark:bg-neutral-800" />
           
-          {/* Preview Toggle */}
-          <button
-            onClick={() => setShowPreview(!showPreview)}
-            className="w-9 h-9 flex items-center justify-center text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-            title={showPreview ? 'Show markdown' : 'Show preview'}
-          >
-            {showPreview ? <Code className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-          </button>
 
           {/* Theme Toggle */}
           <button
@@ -478,73 +403,39 @@ export default function ProjectWorkspace() {
         {/* Editor Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {selectedPage ? (
-            <div className="flex-1 grid grid-cols-2 gap-0 overflow-hidden">
-              {/* Markdown Editor */}
-              <div className="border-r border-gray-200 dark:border-neutral-800 flex flex-col">
-                <div className="p-4 border-b border-gray-200 dark:border-neutral-800">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{selectedPage.title}</h2>
-                  <p className="text-xs text-gray-500 dark:text-neutral-500 mt-1">Type / for commands</p>
-                </div>
-                <textarea
-                  ref={editorRef}
-                  value={autoSave.content}
-                  onChange={(e) => autoSave.setContent(e.target.value)}
-                  className="flex-1 w-full p-6 bg-white dark:bg-[#0B0B0B] text-gray-900 dark:text-white font-mono text-sm resize-none focus:outline-none"
+            <div className="flex-1 flex flex-col">
+              {/* Page Header */}
+              <div className="px-6 pt-6 pb-3 border-b border-gray-200 dark:border-neutral-800">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedPage.title}</h2>
+                <p className="text-xs text-gray-500 dark:text-neutral-500 mt-1.5">
+                  Type <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-neutral-800 rounded text-xs">/</kbd> for commands • 
+                  Press <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-neutral-800 rounded text-xs">⌘S</kbd> to save
+                </p>
+              </div>
+
+              {/* WYSIWYG Editor */}
+              <div className="flex-1 overflow-hidden">
+                <WYSIWYGEditor
+                  content={autoSave.content}
+                  onChange={(content) => autoSave.setContent(content)}
                   placeholder="Start writing..."
                 />
               </div>
-
-              {/* Preview */}
-              {showPreview && (
-                <div className="overflow-y-auto">
-                  <div className="p-6 prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown>{autoSave.content}</ReactMarkdown>
-                  </div>
-                </div>
-              )}
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-neutral-500">
               <div className="text-center">
                 <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Select a page to start editing</p>
+                <p className="text-base mb-2">Select a page to start editing</p>
+                <p className="text-sm text-gray-400 dark:text-neutral-600">
+                  Choose a page from the sidebar or create a new one
+                </p>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Command Menu (/ triggered) */}
-      {showCommandMenu && (
-        <div
-          className="fixed bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-2xl p-2 w-64 z-50"
-          style={{ top: commandMenuPosition.top + 30, left: commandMenuPosition.left }}
-        >
-          <div className="space-y-1">
-            <button onClick={() => insertBlock('heading1')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-800 rounded">
-              Heading 1
-            </button>
-            <button onClick={() => insertBlock('heading2')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-800 rounded">
-              Heading 2
-            </button>
-            <button onClick={() => insertBlock('heading3')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-800 rounded">
-              Heading 3
-            </button>
-            <button onClick={() => insertBlock('code')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-800 rounded">
-              Code Block
-            </button>
-            <button onClick={() => insertBlock('list')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-800 rounded">
-              Bullet List
-            </button>
-            <button onClick={() => insertBlock('quote')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-800 rounded">
-              Quote
-            </button>
-            <button onClick={() => insertBlock('divider')} className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-neutral-800 rounded">
-              Divider
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Create Page Modal */}
       {isCreatePageModalOpen && (
