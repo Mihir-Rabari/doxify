@@ -8,7 +8,9 @@ import TaskItem from '@tiptap/extension-task-item';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import { useEffect } from 'react';
+import { SlashCommand, renderSlashMenu } from './SlashCommandExtension';
 import './editor-styles.css';
+import 'tippy.js/dist/tippy.css';
 
 const lowlight = createLowlight(common);
 
@@ -46,6 +48,11 @@ export default function WYSIWYGEditor({
       }),
       CodeBlockLowlight.configure({
         lowlight,
+      }),
+      SlashCommand.configure({
+        suggestion: {
+          ...renderSlashMenu(),
+        },
       }),
     ],
     content,
