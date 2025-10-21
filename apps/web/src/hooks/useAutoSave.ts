@@ -8,7 +8,7 @@ interface UseAutoSaveOptions {
   enabled?: boolean;
 }
 
-export function useAutoSave({ onSave, delay = 5000, enabled = true }: UseAutoSaveOptions) {
+export function useAutoSave({ onSave, delay = 2000, enabled = true }: UseAutoSaveOptions) {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [content, setContent] = useState('');
   const timeoutRef = useRef<NodeJS.Timeout>();
