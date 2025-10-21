@@ -9,18 +9,29 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Rate limiting
-const limiter = rateLimit({
+// Adaptive Rate limiting
+// High limit for page editing (auto-save every 2 seconds)
+const pageEditLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per 15 minutes (supports frequent auto-save)
+  max: 500, // 500 requests per 15 minutes for page updates (auto-save)
+  message: 'Too many page updates, please slow down.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Standard limit for other endpoints
+const standardLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 175, // 175 requests per 15 minutes for other operations
   message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use('/api/', limiter);
 
 // Service URLs
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:4001';
@@ -55,7 +66,13 @@ app.get('/', (req, res) => {
   });
 });
 
-// Service proxies
+// Service proxies with rate limiting
+app.use('/api/auth', standardLimiter);
+app.use('/api/projects', standardLimiter);
+app.use('/api/parser', standardLimiter);
+app.use('/api/theme', standardLimiter);
+app.use('/api/export', standardLimiter);
+
 app.use(
   '/api/auth',
   createProxyMiddleware({
@@ -110,6 +127,17 @@ app.use(
     },
   })
 );
+
+// Apply high rate limit to page update endpoints (for auto-save)
+app.use('/api/pages/:pageId', (req, res, next) => {
+  if (req.method === 'PUT' || req.method === 'PATCH') {
+    return pageEditLimiter(req, res, next);
+  }
+  return standardLimiter(req, res, next);
+});
+
+// Apply standard rate limit to other pages endpoints
+app.use('/api/pages', standardLimiter);
 
 app.use(
   '/api/pages',
