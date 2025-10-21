@@ -94,8 +94,12 @@
 }
 
 /* Code Blocks */
+.code-block-wrapper {
+  @apply my-4;
+}
+
 .ProseMirror pre {
-  @apply bg-gray-100 dark:bg-neutral-900 rounded-lg p-4 mb-4 overflow-x-auto;
+  @apply bg-gray-50 dark:bg-[#0a0a0a] rounded-lg p-4 mb-4 overflow-x-auto border border-gray-200 dark:border-neutral-800;
   font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
 }
 
@@ -103,6 +107,33 @@
   @apply text-sm text-gray-800 dark:text-neutral-200;
   background: none;
   padding: 0;
+  display: block;
+  line-height: 1.6;
+}
+
+/* Syntax Highlighting */
+.ProseMirror pre .hljs-keyword {
+  @apply text-purple-600 dark:text-purple-400;
+}
+
+.ProseMirror pre .hljs-string {
+  @apply text-green-600 dark:text-green-400;
+}
+
+.ProseMirror pre .hljs-number {
+  @apply text-orange-600 dark:text-orange-400;
+}
+
+.ProseMirror pre .hljs-comment {
+  @apply text-gray-500 dark:text-gray-500 italic;
+}
+
+.ProseMirror pre .hljs-function {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+.ProseMirror pre .hljs-variable {
+  @apply text-red-600 dark:text-red-400;
 }
 
 /* Inline Code */
