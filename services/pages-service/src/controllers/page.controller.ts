@@ -13,7 +13,7 @@ export const createPage = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { projectId, title, content = '', metadata = {} } = req.body;
+    const { projectId, title, content = '', section = 'General', order = 0, metadata = {} } = req.body;
 
     // Generate slug
     let slug = '/' + slugify(title, { lower: true, strict: true });
@@ -47,6 +47,8 @@ export const createPage = async (req: Request, res: Response) => {
       slug,
       content,
       blocks,
+      section,
+      order,
       metadata,
     });
 
@@ -76,7 +78,7 @@ export const getPages = async (req: Request, res: Response) => {
     const skip = (Number(page) - 1) * Number(limit);
     const total = await Page.countDocuments(query);
     const pages = await Page.find(query)
-      .sort({ 'metadata.sidebarPosition': 1, createdAt: 1 })
+      .sort({ section: 1, order: 1, createdAt: 1 })
       .skip(skip)
       .limit(Number(limit));
 
