@@ -209,7 +209,7 @@ export default function ProjectWorkspace() {
       createPageMutation.mutate({
         projectId,
         title: newPageTitle,
-        content: `# ${newPageTitle}\n\nStart writing...`,
+        content: `<h1>${newPageTitle}</h1><p>Start writing...</p>`,
         section: newPageSection || 'General',
       });
     }
