@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import pageRoutes from './routes/page.routes';
+import sectionRoutes from './routes/section.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 dotenv.config();
@@ -22,6 +23,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/pages', pageRoutes);
+app.use('/api/pages', sectionRoutes);
 
 // Error handler
 app.use(errorHandler);

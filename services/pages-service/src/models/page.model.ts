@@ -21,6 +21,8 @@ export interface IPage extends Document {
   slug: string;
   content: string;
   blocks: IBlock[];
+  section: string;
+  order: number;
   metadata: IPageMetadata;
   createdAt: Date;
   updatedAt: Date;
@@ -65,6 +67,15 @@ const PageSchema: Schema = new Schema(
     blocks: {
       type: [BlockSchema],
       default: [],
+    },
+    section: {
+      type: String,
+      default: 'General',
+      trim: true,
+    },
+    order: {
+      type: Number,
+      default: 0,
     },
     metadata: {
       type: PageMetadataSchema,
