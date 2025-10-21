@@ -222,15 +222,41 @@ export default function ProjectWorkspace() {
     }
   }, [pagesData]);
 
-  // Handle drag end
+  // Handle drag end - supports cross-section dragging
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (over && active.id !== over.id) {
-      const oldIndex = localPages.findIndex((p) => p._id === active.id);
-      const newIndex = localPages.findIndex((p) => p._id === over.id);
+    if (!over || active.id === over.id) return;
 
-      const newOrder = arrayMove(localPages, oldIndex, newIndex);
+    const activePageIndex = localPages.findIndex((p) => p._id === active.id);
+    const overPageIndex = localPages.findIndex((p) => p._id === over.id);
+
+    if (activePageIndex === -1 || overPageIndex === -1) return;
+
+    const activePage = localPages[activePageIndex];
+    const overPage = localPages[overPageIndex];
+
+    // Check if moving to a different section
+    if (activePage.section !== overPage.section) {
+      // Move page to new section
+      const updatedPage = { ...activePage, section: overPage.section };
+      const newPages = [...localPages];
+      newPages[activePageIndex] = updatedPage;
+
+      // Reorder pages
+      const reordered = arrayMove(newPages, activePageIndex, overPageIndex);
+      setLocalPages(reordered);
+
+      // Update on server - change section and reorder
+      updatePageMutation.mutate({
+        id: activePage._id,
+        data: { section: overPage.section },
+      });
+
+      toast.success(`Moved to ${overPage.section}!`);
+    } else {
+      // Same section - just reorder
+      const newOrder = arrayMove(localPages, activePageIndex, overPageIndex);
       setLocalPages(newOrder);
 
       // Update order on server
