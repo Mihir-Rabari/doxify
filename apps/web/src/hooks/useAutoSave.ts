@@ -8,7 +8,7 @@ interface UseAutoSaveOptions {
   enabled?: boolean;
 }
 
-export function useAutoSave({ onSave, delay = 2000, enabled = true }: UseAutoSaveOptions) {
+export function useAutoSave({ onSave, delay = 5000, enabled = true }: UseAutoSaveOptions) {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [content, setContent] = useState('');
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -44,10 +44,10 @@ export function useAutoSave({ onSave, delay = 2000, enabled = true }: UseAutoSav
           previousContentRef.current = content;
           setStatus('saved');
           
-          // Reset to idle after 2 seconds
+          // Reset to idle after 3 seconds
           setTimeout(() => {
             setStatus('idle');
-          }, 2000);
+          }, 3000);
         } catch (error) {
           console.error('Autosave failed:', error);
           setStatus('unsaved');
@@ -82,7 +82,7 @@ export function useAutoSave({ onSave, delay = 2000, enabled = true }: UseAutoSav
         
         setTimeout(() => {
           setStatus('idle');
-        }, 2000);
+        }, 3000);
       } catch (error) {
         console.error('Manual save failed:', error);
         setStatus('unsaved');
