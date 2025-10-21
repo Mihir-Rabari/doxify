@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { projectService } from '@/services/projectService';
 import { pageService } from '@/services/pageService';
+import { sectionService } from '@/services/sectionService';
 import { exportService } from '@/services/exportService';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -22,6 +23,7 @@ import Loading from '@/components/ui/Loading';
 import WYSIWYGEditor from '@/components/Editor/WYSIWYGEditor';
 import SearchBar from '@/components/SearchBar';
 import SortablePageItem from '@/components/SortablePageItem';
+import SectionHeader from '@/components/SectionHeader';
 import { TocSidebar } from '@/components/TableOfContents';
 import {
   DndContext,
@@ -171,6 +173,24 @@ export default function ProjectWorkspace() {
     },
   });
 
+  // Section mutations
+  const updateSectionMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => 
+      sectionService.updateSection(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages', projectId] });
+      toast.success('Section updated!');
+    },
+  });
+
+  const deleteSectionMutation = useMutation({
+    mutationFn: sectionService.deleteSection,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages', projectId] });
+      toast.success('Section deleted!');
+    },
+  });
+
   // Autosave
   const autoSave = useAutoSave({
     onSave: async (content) => {
@@ -190,6 +210,7 @@ export default function ProjectWorkspace() {
         projectId,
         title: newPageTitle,
         content: `# ${newPageTitle}\n\nStart writing...`,
+        section: newPageSection || 'General',
       });
     }
   };
@@ -373,19 +394,33 @@ export default function ProjectWorkspace() {
                   Object.entries(sections).map(([sectionName, sectionPages]) => (
                     <div key={sectionName} className="mb-4">
                       {/* Section Header */}
-                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-600 dark:text-neutral-400 uppercase tracking-wider flex items-center justify-between group">
-                        <span>{sectionName}</span>
-                        <button
-                          onClick={() => {
-                            setNewPageSection(sectionName);
-                            setIsCreatePageModalOpen(true);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center text-gray-500 hover:text-emerald-500 transition-all"
-                          title="Add page to section"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <SectionHeader
+                        name={sectionName}
+                        isDefault={sectionName === 'General'}
+                        onAddPage={() => {
+                          setNewPageSection(sectionName);
+                          setIsCreatePageModalOpen(true);
+                        }}
+                        onRename={(newName) => {
+                          // Find section ID and update
+                          const sectionPage = sectionPages[0];
+                          if (sectionPage) {
+                            updatePageMutation.mutate({
+                              id: sectionPage._id,
+                              data: { section: newName },
+                            });
+                          }
+                        }}
+                        onDelete={() => {
+                          // Move all pages to General
+                          sectionPages.forEach((page) => {
+                            updatePageMutation.mutate({
+                              id: page._id,
+                              data: { section: 'General' },
+                            });
+                          });
+                        }}
+                      />
 
                       {/* Sortable Section Pages */}
                       <SortableContext

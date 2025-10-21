@@ -79,6 +79,8 @@ export interface Page {
   slug: string;
   content: string;
   blocks: Block[];
+  section: string;
+  order: number;
   metadata: PageMetadata;
   createdAt: string;
   updatedAt: string;
@@ -92,6 +94,8 @@ export interface CreatePageData {
   projectId: string;
   title: string;
   content?: string;
+  section?: string;
+  order?: number;
   metadata?: Partial<PageMetadata>;
 }
 
@@ -99,6 +103,8 @@ export interface UpdatePageData {
   title?: string;
   content?: string;
   slug?: string;
+  section?: string;
+  order?: number;
   metadata?: Partial<PageMetadata>;
 }
 
