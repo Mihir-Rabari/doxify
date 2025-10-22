@@ -11,12 +11,26 @@ export interface ITheme {
   codeTheme: string;
 }
 
+export interface IPublishSettings {
+  isPublished: boolean;
+  publishedAt?: Date;
+  customDomain?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  favicon?: string;
+  analytics?: {
+    googleAnalyticsId?: string;
+    plausibleDomain?: string;
+  };
+}
+
 export interface IProject extends Document {
   name: string;
   slug: string;
   description?: string;
   userId: string;
   theme: ITheme;
+  publishSettings: IPublishSettings;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,6 +46,19 @@ const ThemeSchema = new Schema({
   codeTheme: { type: String, default: 'dracula' },
 });
 
+const PublishSettingsSchema = new Schema({
+  isPublished: { type: Boolean, default: false },
+  publishedAt: { type: Date },
+  customDomain: { type: String, trim: true },
+  seoTitle: { type: String, trim: true },
+  seoDescription: { type: String, trim: true },
+  favicon: { type: String, trim: true },
+  analytics: {
+    googleAnalyticsId: { type: String, trim: true },
+    plausibleDomain: { type: String, trim: true },
+  },
+});
+
 const ProjectSchema: Schema = new Schema(
   {
     name: {
@@ -45,6 +72,7 @@ const ProjectSchema: Schema = new Schema(
       unique: true,
       trim: true,
       lowercase: true,
+      match: /^[a-z0-9-]+$/, // Only lowercase alphanumeric and hyphens
     },
     description: {
       type: String,
@@ -59,6 +87,10 @@ const ProjectSchema: Schema = new Schema(
       type: ThemeSchema,
       default: () => ({}),
     },
+    publishSettings: {
+      type: PublishSettingsSchema,
+      default: () => ({ isPublished: false }),
+    },
   },
   {
     timestamps: true,
@@ -67,5 +99,6 @@ const ProjectSchema: Schema = new Schema(
 
 // Indexes
 ProjectSchema.index({ userId: 1, slug: 1 });
+ProjectSchema.index({ 'publishSettings.isPublished': 1, slug: 1 }); // For published projects lookup
 
 export default mongoose.model<IProject>('Project', ProjectSchema);

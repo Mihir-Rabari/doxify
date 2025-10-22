@@ -98,6 +98,22 @@ module.exports = {
       max_memory_restart: '300M',
     },
 
+    // Viewer Service (Public Documentation)
+    {
+      name: 'viewer-service',
+      cwd: './services/viewer-service',
+      script: './node_modules/ts-node/dist/bin.js',
+      args: '--transpileOnly src/index.ts',
+      interpreter: 'node',
+      env: {
+        PORT: 4007,
+        MONGODB_URI: 'mongodb://localhost:27017/doxify',
+      },
+      watch: false,
+      autorestart: true,
+      max_memory_restart: '300M',
+    },
+
     // API Gateway
     {
       name: 'api-gateway',
@@ -113,6 +129,7 @@ module.exports = {
         PARSER_SERVICE_URL: 'http://localhost:4004',
         THEME_SERVICE_URL: 'http://localhost:4005',
         EXPORT_SERVICE_URL: 'http://localhost:4006',
+        VIEWER_SERVICE_URL: 'http://localhost:4007',
       },
       watch: false,
       autorestart: true,

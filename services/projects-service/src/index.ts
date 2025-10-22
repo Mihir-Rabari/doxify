@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import projectRoutes from './routes/project.routes';
+import publishRoutes from './routes/publish.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 dotenv.config();
@@ -22,6 +23,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/projects', projectRoutes);
+app.use('/api/projects', publishRoutes);
 
 // Error handler
 app.use(errorHandler);

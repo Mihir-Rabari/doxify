@@ -31,6 +31,7 @@ const PAGES_SERVICE_URL = process.env.PAGES_SERVICE_URL || 'http://localhost:400
 const PARSER_SERVICE_URL = process.env.PARSER_SERVICE_URL || 'http://localhost:4004';
 const THEME_SERVICE_URL = process.env.THEME_SERVICE_URL || 'http://localhost:4005';
 const EXPORT_SERVICE_URL = process.env.EXPORT_SERVICE_URL || 'http://localhost:4006';
+const VIEWER_SERVICE_URL = process.env.VIEWER_SERVICE_URL || 'http://localhost:4007';
 
 // Health check
 app.get('/health', (req, res) => {
@@ -53,6 +54,7 @@ app.get('/', (req, res) => {
       parser: '/api/parser',
       theme: '/api/theme',
       export: '/api/export',
+      viewer: '/api/view',
     },
     rateLimits: {
       search: '100 req/min',
@@ -362,6 +364,27 @@ app.use(
   })
 );
 
+// 8. VIEWER SERVICE - Public documentation (high read volume)
+app.use('/api/view', readLimiter); // High read limit for public docs
+
+app.use(
+  '/api/view',
+  createProxyMiddleware({
+    target: VIEWER_SERVICE_URL,
+    changeOrigin: true,
+    onProxyReq: (proxyReq, req: any, res) => {
+      console.log(`[Viewer] ${req.method} ${req.url}`);
+    },
+    onError: (err, req, res) => {
+      console.error('Viewer service error:', err.message);
+      (res as any).status(503).json({
+        success: false,
+        message: 'Viewer service unavailable',
+      });
+    },
+  })
+);
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
@@ -389,6 +412,7 @@ app.listen(PORT, () => {
   console.log(`  - Parser: ${PARSER_SERVICE_URL}`);
   console.log(`  - Theme: ${THEME_SERVICE_URL}`);
   console.log(`  - Export: ${EXPORT_SERVICE_URL}`);
+  console.log(`  - Viewer: ${VIEWER_SERVICE_URL} (Public Docs)`);
 });
 
 export default app;
