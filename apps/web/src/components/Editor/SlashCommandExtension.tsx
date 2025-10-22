@@ -47,7 +47,8 @@ export const renderSlashMenu = () => {
         onStart: (props: any) => {
           component = new ReactRenderer(SlashMenu, {
             props: {
-              ...props,
+              editor: props.editor,
+              query: props.query || '',
               onSelect: () => {
                 props.editor.commands.deleteRange({ from: props.range.from, to: props.range.to });
                 popup?.[0]?.hide();
@@ -75,7 +76,8 @@ export const renderSlashMenu = () => {
 
         onUpdate(props: any) {
           component?.updateProps({
-            ...props,
+            editor: props.editor,
+            query: props.query || '',
             onSelect: () => {
               props.editor.commands.deleteRange({ from: props.range.from, to: props.range.to });
               popup?.[0]?.hide();
