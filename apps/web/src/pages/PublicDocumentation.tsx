@@ -138,10 +138,13 @@ export default function PublicDocumentation() {
                         ? page.title.toLowerCase().includes(searchQuery.toLowerCase())
                         : true
                     )
-                    .map((page: any) => (
+                    .map((page: any) => {
+                      // Remove leading slash from page slug if present
+                      const pageSlug = page.slug.startsWith('/') ? page.slug.slice(1) : page.slug;
+                      return (
                       <Link
                         key={page.slug}
-                        to={`/sites/${slug}/${page.slug}`}
+                        to={`/sites/${slug}/${pageSlug}`}
                         className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
                           pageData?.slug === page.slug
                             ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium'
@@ -150,7 +153,8 @@ export default function PublicDocumentation() {
                       >
                         {page.title}
                       </Link>
-                    ))}
+                    );
+                    })}
                 </div>
               </div>
             ))}
