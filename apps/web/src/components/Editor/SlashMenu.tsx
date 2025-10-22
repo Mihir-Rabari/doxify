@@ -1,5 +1,5 @@
 import { Editor } from '@tiptap/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { 
   Heading1, 
   Heading2, 
@@ -28,15 +28,18 @@ interface SlashMenuProps {
   onIndexChange?: (index: number, count: number) => void;
 }
 
-export default function SlashMenu({ 
+export interface SlashMenuRef {
+  selectItem: () => void;
+}
+
+const SlashMenu = forwardRef<SlashMenuRef, SlashMenuProps>(({ 
   editor, 
   query = '', 
   selectedIndex: externalIndex = 0,
   onSelect,
   onIndexChange,
-}: SlashMenuProps) {
+}, ref) => {
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const items: SlashMenuItem[] = [
     {
@@ -129,22 +132,16 @@ export default function SlashMenu({
     }
   }, [externalIndex]);
 
-  // Listen for Enter key selection from extension
-  useEffect(() => {
-    const handleCustomSelect = (e: Event) => {
-      const customEvent = e as CustomEvent<{ index: number }>;
-      const item = filteredItems[customEvent.detail.index];
+  // Expose selectItem function to parent via ref
+  useImperativeHandle(ref, () => ({
+    selectItem: () => {
+      const item = filteredItems[externalIndex];
       if (item) {
         item.command(editor);
         onSelect();
       }
-    };
-
-    containerRef.current?.addEventListener('slash-menu-select', handleCustomSelect);
-    return () => {
-      containerRef.current?.removeEventListener('slash-menu-select', handleCustomSelect);
-    };
-  }, [filteredItems, editor, onSelect]);
+    },
+  }), [filteredItems, externalIndex, editor, onSelect]);
 
   const handleSelect = (item: SlashMenuItem) => {
     item.command(editor);
@@ -163,7 +160,6 @@ export default function SlashMenu({
 
   return (
     <div 
-      ref={containerRef}
       className="w-80 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-2xl overflow-hidden"
     >
       <div className="p-2 max-h-[400px] overflow-y-auto">
@@ -202,4 +198,8 @@ export default function SlashMenu({
       </div>
     </div>
   );
-}
+});
+
+SlashMenu.displayName = 'SlashMenu';
+
+export default SlashMenu;

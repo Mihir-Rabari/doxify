@@ -53,6 +53,7 @@ export const renderSlashMenu = () => {
               editor: props.editor,
               query: props.query || '',
               selectedIndex: 0,
+              ref: null,
               onSelect: () => {
                 props.editor.commands.deleteRange({ from: props.range.from, to: props.range.to });
                 popup?.[0]?.hide();
@@ -126,9 +127,10 @@ export const renderSlashMenu = () => {
 
           if (props.event.key === 'Enter') {
             props.event.preventDefault();
-            // Trigger selection via a custom event
-            const selectEvent = new CustomEvent('slash-menu-select', { detail: { index: selectedIndex } });
-            component?.element.dispatchEvent(selectEvent);
+            // Call selectItem on the component ref
+            if (component?.ref?.selectItem) {
+              component.ref.selectItem();
+            }
             return true;
           }
 
