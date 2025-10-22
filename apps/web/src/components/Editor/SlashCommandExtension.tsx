@@ -35,6 +35,8 @@ export const SlashCommand = Extension.create({
 export const renderSlashMenu = () => {
   let component: ReactRenderer | null = null;
   let popup: TippyInstance[] | null = null;
+  let selectedIndex = 0;
+  let filteredItemsCount = 0;
 
   return {
     items: ({ query }: { query: string }) => {
@@ -45,13 +47,19 @@ export const renderSlashMenu = () => {
     render: () => {
       return {
         onStart: (props: any) => {
+          selectedIndex = 0;
           component = new ReactRenderer(SlashMenu, {
             props: {
               editor: props.editor,
               query: props.query || '',
+              selectedIndex: 0,
               onSelect: () => {
                 props.editor.commands.deleteRange({ from: props.range.from, to: props.range.to });
                 popup?.[0]?.hide();
+              },
+              onIndexChange: (index: number, count: number) => {
+                selectedIndex = index;
+                filteredItemsCount = count;
               },
             },
             editor: props.editor,
@@ -78,9 +86,14 @@ export const renderSlashMenu = () => {
           component?.updateProps({
             editor: props.editor,
             query: props.query || '',
+            selectedIndex,
             onSelect: () => {
               props.editor.commands.deleteRange({ from: props.range.from, to: props.range.to });
               popup?.[0]?.hide();
+            },
+            onIndexChange: (index: number, count: number) => {
+              selectedIndex = index;
+              filteredItemsCount = count;
             },
           });
 
@@ -98,6 +111,27 @@ export const renderSlashMenu = () => {
             popup?.[0]?.hide();
             return true;
           }
+
+          if (props.event.key === 'ArrowUp') {
+            selectedIndex = (selectedIndex - 1 + filteredItemsCount) % filteredItemsCount;
+            component?.updateProps({ selectedIndex });
+            return true;
+          }
+
+          if (props.event.key === 'ArrowDown') {
+            selectedIndex = (selectedIndex + 1) % filteredItemsCount;
+            component?.updateProps({ selectedIndex });
+            return true;
+          }
+
+          if (props.event.key === 'Enter') {
+            props.event.preventDefault();
+            // Trigger selection via a custom event
+            const selectEvent = new CustomEvent('slash-menu-select', { detail: { index: selectedIndex } });
+            component?.element.dispatchEvent(selectEvent);
+            return true;
+          }
+
           return false;
         },
 

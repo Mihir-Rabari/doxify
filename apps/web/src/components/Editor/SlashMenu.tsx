@@ -1,5 +1,5 @@
 import { Editor } from '@tiptap/react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { 
   Heading1, 
   Heading2, 
@@ -23,12 +23,20 @@ interface SlashMenuItem {
 interface SlashMenuProps {
   editor: Editor;
   query?: string;
+  selectedIndex?: number;
   onSelect: () => void;
+  onIndexChange?: (index: number, count: number) => void;
 }
 
-export default function SlashMenu({ editor, query = '', onSelect }: SlashMenuProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+export default function SlashMenu({ 
+  editor, 
+  query = '', 
+  selectedIndex: externalIndex = 0,
+  onSelect,
+  onIndexChange,
+}: SlashMenuProps) {
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const items: SlashMenuItem[] = [
     {
@@ -106,37 +114,41 @@ export default function SlashMenu({ editor, query = '', onSelect }: SlashMenuPro
     );
   });
 
-  // Reset selected index when query changes
+  // Report filtered items count to extension
   useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
+    if (onIndexChange) {
+      onIndexChange(externalIndex, filteredItems.length);
+    }
+  }, [filteredItems.length, externalIndex, onIndexChange]);
 
   // Scroll selected item into view
   useEffect(() => {
-    const selectedItem = itemRefs.current[selectedIndex];
+    const selectedItem = itemRefs.current[externalIndex];
     if (selectedItem) {
       selectedItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
-  }, [selectedIndex]);
+  }, [externalIndex]);
+
+  // Listen for Enter key selection from extension
+  useEffect(() => {
+    const handleCustomSelect = (e: Event) => {
+      const customEvent = e as CustomEvent<{ index: number }>;
+      const item = filteredItems[customEvent.detail.index];
+      if (item) {
+        item.command(editor);
+        onSelect();
+      }
+    };
+
+    containerRef.current?.addEventListener('slash-menu-select', handleCustomSelect);
+    return () => {
+      containerRef.current?.removeEventListener('slash-menu-select', handleCustomSelect);
+    };
+  }, [filteredItems, editor, onSelect]);
 
   const handleSelect = (item: SlashMenuItem) => {
     item.command(editor);
     onSelect();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev + 1) % filteredItems.length);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (filteredItems[selectedIndex]) {
-        handleSelect(filteredItems[selectedIndex]);
-      }
-    }
   };
 
   if (filteredItems.length === 0) {
@@ -151,8 +163,8 @@ export default function SlashMenu({ editor, query = '', onSelect }: SlashMenuPro
 
   return (
     <div 
+      ref={containerRef}
       className="w-80 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl shadow-2xl overflow-hidden"
-      onKeyDown={handleKeyDown}
     >
       <div className="p-2 max-h-[400px] overflow-y-auto">
         {filteredItems.map((item, index) => (
@@ -161,13 +173,13 @@ export default function SlashMenu({ editor, query = '', onSelect }: SlashMenuPro
             ref={(el) => (itemRefs.current[index] = el)}
             onClick={() => handleSelect(item)}
             className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg transition-colors text-left group ${
-              index === selectedIndex
+              index === externalIndex
                 ? 'bg-emerald-50 dark:bg-emerald-500/10'
                 : 'hover:bg-gray-50 dark:hover:bg-neutral-800'
             }`}
           >
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${
-              index === selectedIndex
+              index === externalIndex
                 ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                 : 'bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 group-hover:text-emerald-500 group-hover:bg-emerald-500/10'
             }`}>
@@ -175,7 +187,7 @@ export default function SlashMenu({ editor, query = '', onSelect }: SlashMenuPro
             </div>
             <div className="flex-1 min-w-0">
               <div className={`text-sm font-medium ${
-                index === selectedIndex
+                index === externalIndex
                   ? 'text-emerald-600 dark:text-emerald-400'
                   : 'text-gray-900 dark:text-white'
               }`}>
