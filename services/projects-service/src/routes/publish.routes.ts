@@ -9,10 +9,10 @@ import {
 
 const router = express.Router();
 
-// Publish/unpublish routes
-router.post('/projects/:projectId/publish', publishProject);
-router.post('/projects/:projectId/unpublish', unpublishProject);
-router.patch('/projects/:projectId/publish-settings', updatePublishSettings);
+// Publish/unpublish routes (mounted at /api/projects)
+router.post('/:projectId/publish', publishProject);
+router.post('/:projectId/unpublish', unpublishProject);
+router.patch('/:projectId/publish-settings', updatePublishSettings);
 
 // Slug management
 router.get('/slugs/:slug/availability', checkSlugAvailability);
