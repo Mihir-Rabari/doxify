@@ -353,7 +353,7 @@ export default function ProjectWorkspace() {
         <div className="flex-1 flex justify-center px-8">
           <div className="w-full max-w-md">
             <SearchBar
-              pages={pages}
+              projectId={projectId!}
               onSelectPage={(pageId: string) => setSelectedPageId(pageId)}
             />
           </div>

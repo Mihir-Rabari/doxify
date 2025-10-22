@@ -90,4 +90,23 @@ const PageSchema: Schema = new Schema(
 // Compound index for unique slug per project
 PageSchema.index({ projectId: 1, slug: 1 }, { unique: true });
 
+// Text index for full-text search on title and content
+PageSchema.index({ 
+  title: 'text', 
+  content: 'text',
+  section: 'text'
+}, {
+  weights: {
+    title: 10,      // Title matches are most important
+    section: 5,     // Section matches are medium importance
+    content: 1      // Content matches are least important
+  },
+  name: 'page_search_index'
+});
+
+// Additional indexes for filtering and sorting
+PageSchema.index({ projectId: 1, section: 1, order: 1 });
+PageSchema.index({ projectId: 1, createdAt: -1 });
+PageSchema.index({ projectId: 1, updatedAt: -1 });
+
 export default mongoose.model<IPage>('Page', PageSchema);

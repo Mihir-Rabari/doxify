@@ -1,22 +1,18 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, X, Clock, FileText } from 'lucide-react';
+import { searchService, SearchResult } from '../services/searchService';
 
 interface SearchBarProps {
-  pages: any[];
+  projectId: string;
   onSelectPage: (pageId: string) => void;
 }
 
-interface SearchResult {
-  page: any;
-  score: number;
-  matchedIn: 'title' | 'content';
-  preview?: string;
-}
-
-export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
+export default function SearchBar({ projectId, onSelectPage }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<(HTMLButtonElement | null)[]>([]);
@@ -50,71 +46,28 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  // Fuzzy search with scoring
-  const calculateScore = (text: string, query: string): number => {
-    const lowerText = text.toLowerCase();
-    const lowerQuery = query.toLowerCase();
-    
-    // Exact match - highest score
-    if (lowerText === lowerQuery) return 100;
-    
-    // Starts with query - high score
-    if (lowerText.startsWith(lowerQuery)) return 80;
-    
-    // Contains query as whole word - medium-high score
-    if (new RegExp(`\\b${lowerQuery}\\b`).test(lowerText)) return 60;
-    
-    // Contains query - medium score
-    if (lowerText.includes(lowerQuery)) return 40;
-    
-    // Fuzzy match - calculate based on character matches
-    let score = 0;
-    let queryIndex = 0;
-    for (let i = 0; i < lowerText.length && queryIndex < lowerQuery.length; i++) {
-      if (lowerText[i] === lowerQuery[queryIndex]) {
-        score += 1;
-        queryIndex++;
-      }
+  // Backend search with API call
+  useEffect(() => {
+    if (!debouncedQuery.trim()) {
+      setResults([]);
+      return;
     }
-    return queryIndex === lowerQuery.length ? (score / lowerQuery.length) * 20 : 0;
-  };
 
-  // Optimized search with useMemo
-  const results = useMemo(() => {
-    if (!debouncedQuery.trim()) return [];
-
-    const searchQuery = debouncedQuery.toLowerCase();
-    const searchResults: SearchResult[] = [];
-
-    pages.forEach((page) => {
-      const titleScore = calculateScore(page.title, searchQuery);
-      const contentScore = page.content ? calculateScore(page.content, searchQuery) : 0;
-      
-      // Only include if there's a match
-      if (titleScore > 0 || contentScore > 0) {
-        const matchedIn = titleScore >= contentScore ? 'title' : 'content';
-        const score = Math.max(titleScore, contentScore);
-        
-        // Extract preview snippet from content
-        let preview = '';
-        if (matchedIn === 'content' && page.content) {
-          const index = page.content.toLowerCase().indexOf(searchQuery);
-          if (index !== -1) {
-            const start = Math.max(0, index - 30);
-            const end = Math.min(page.content.length, index + searchQuery.length + 70);
-            preview = (start > 0 ? '...' : '') + 
-                     page.content.substring(start, end).replace(/<[^>]*>/g, '') + 
-                     (end < page.content.length ? '...' : '');
-          }
-        }
-        
-        searchResults.push({ page, score, matchedIn, preview });
+    const performSearch = async () => {
+      setIsSearching(true);
+      try {
+        const response = await searchService.searchPages(projectId, debouncedQuery, { limit: 20 });
+        setResults(response.results);
+      } catch (error) {
+        console.error('Search error:', error);
+        setResults([]);
+      } finally {
+        setIsSearching(false);
       }
-    });
+    };
 
-    // Sort by score (highest first)
-    return searchResults.sort((a, b) => b.score - a.score);
-  }, [debouncedQuery, pages]);
+    performSearch();
+  }, [debouncedQuery, projectId]);
 
   // Reset selected index when results change
   useEffect(() => {
@@ -136,7 +89,7 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
         setSelectedIndex((prev) => (prev - 1 + results.length) % results.length);
       } else if (e.key === 'Enter' && results[selectedIndex]) {
         e.preventDefault();
-        handleSelect(results[selectedIndex].page._id);
+        handleSelect(results[selectedIndex]._id);
       }
     };
 
@@ -216,9 +169,9 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
                   <div className="py-2">
                     {results.map((result, index) => (
                       <button
-                        key={result.page._id}
+                        key={result._id}
                         ref={(el) => (resultsRef.current[index] = el)}
-                        onClick={() => handleSelect(result.page._id)}
+                        onClick={() => handleSelect(result._id)}
                         className={`w-full px-4 py-3 text-left transition-colors group ${
                           index === selectedIndex
                             ? 'bg-emerald-50 dark:bg-emerald-500/10'
@@ -237,11 +190,11 @@ export default function SearchBar({ pages, onSelectPage }: SearchBarProps) {
                                 ? 'text-emerald-600 dark:text-emerald-400'
                                 : 'text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
                             }`}>
-                              {result.page.title}
+                              {result.title}
                             </div>
-                            {result.matchedIn === 'title' && result.page.section && (
+                            {result.matchedIn === 'title' && result.section && (
                               <div className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">
-                                in {result.page.section}
+                                in {result.section}
                               </div>
                             )}
                             {result.preview && (

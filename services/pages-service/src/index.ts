@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import pageRoutes from './routes/page.routes';
 import sectionRoutes from './routes/section.routes';
+import searchRoutes from './routes/search.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/pages', pageRoutes);
 app.use('/api/pages', sectionRoutes);
+app.use('/api/pages', searchRoutes);
 
 // Error handler
 app.use(errorHandler);
