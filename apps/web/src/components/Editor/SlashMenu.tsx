@@ -137,15 +137,21 @@ const SlashMenu = forwardRef<SlashMenuRef, SlashMenuProps>(({
     selectItem: () => {
       const item = filteredItems[externalIndex];
       if (item) {
-        item.command(editor);
-        onSelect();
+        onSelect(); // Delete slash command text FIRST
+        // Use setTimeout to ensure deletion happens before command
+        setTimeout(() => {
+          item.command(editor);
+        }, 0);
       }
     },
   }), [filteredItems, externalIndex, editor, onSelect]);
 
   const handleSelect = (item: SlashMenuItem) => {
-    item.command(editor);
-    onSelect();
+    onSelect(); // Delete slash command text FIRST
+    // Use setTimeout to ensure deletion happens before command
+    setTimeout(() => {
+      item.command(editor);
+    }, 0);
   };
 
   if (filteredItems.length === 0) {
