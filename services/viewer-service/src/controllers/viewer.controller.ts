@@ -105,10 +105,14 @@ export const getPublishedPage = async (req: Request, res: Response) => {
       });
     }
 
-    // Get the specific page
+    // Get the specific page (handle both with and without leading slash)
     const page = await Page.findOne({ 
       projectId: project._id.toString(),
-      slug: pageSlug
+      $or: [
+        { slug: pageSlug },
+        { slug: `/${pageSlug}` },
+        { slug: pageSlug.startsWith('/') ? pageSlug.slice(1) : `/${pageSlug}` }
+      ]
     }).select('title slug content section order').lean();
 
     if (!page) {
