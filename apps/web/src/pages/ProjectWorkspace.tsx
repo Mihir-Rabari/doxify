@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Moon,
   Sun,
+  Globe,
 } from 'lucide-react';
 import { projectService } from '@/services/projectService';
 import { pageService } from '@/services/pageService';
@@ -24,6 +25,7 @@ import WYSIWYGEditor from '@/components/Editor/WYSIWYGEditor';
 import SearchBar from '@/components/SearchBar';
 import SortablePageItem from '@/components/SortablePageItem';
 import SectionHeader from '@/components/SectionHeader';
+import PublishModal from '@/components/PublishModal';
 import { TocSidebar } from '@/components/TableOfContents';
 import {
   DndContext,
@@ -65,6 +67,7 @@ export default function ProjectWorkspace() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tocOpen, setTocOpen] = useState(true);
   const [isCreatePageModalOpen, setIsCreatePageModalOpen] = useState(false);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSection, setNewPageSection] = useState('');
   const [localPages, setLocalPages] = useState<Page[]>([]);
@@ -372,6 +375,19 @@ export default function ProjectWorkspace() {
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
 
+          {/* Publish */}
+          <button
+            onClick={() => setIsPublishModalOpen(true)}
+            className={`h-9 px-4 rounded-lg transition-colors text-sm font-medium flex items-center gap-2 ${
+              project?.publishSettings?.isPublished
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20'
+                : 'border border-gray-300 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800'
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            {project?.publishSettings?.isPublished ? 'Published' : 'Publish'}
+          </button>
+
           {/* Export */}
           <button
             onClick={handleExport}
@@ -595,6 +611,13 @@ export default function ProjectWorkspace() {
           </div>
         </div>
       )}
+
+      {/* Publish Modal */}
+      <PublishModal
+        isOpen={isPublishModalOpen}
+        onClose={() => setIsPublishModalOpen(false)}
+        project={project}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProjectWorkspace from './pages/ProjectWorkspace';
 import ProjectSettings from './pages/ProjectSettings';
+import PublicDocumentation from './pages/PublicDocumentation';
 import NotFound from './pages/NotFound';
 
 // Components
@@ -35,6 +36,10 @@ function App() {
           path="/register"
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />}
         />
+
+        {/* Public documentation viewer */}
+        <Route path="/sites/:slug" element={<PublicDocumentation />} />
+        <Route path="/sites/:slug/:pageSlug" element={<PublicDocumentation />} />
 
         {/* Protected routes */}
         <Route
