@@ -30,7 +30,7 @@ export default function WYSIWYGEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        codeBlock: false, // We'll use CodeBlockLowlight instead
+        codeBlock: false, // We'll use CustomCodeBlock instead
       }),
       Placeholder.configure({
         placeholder,
@@ -68,10 +68,12 @@ export default function WYSIWYGEditor({
     },
   });
 
-  // Update content when it changes externally
+  // Update content when it changes externally (with queueMicrotask to avoid flushSync warning)
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
+      queueMicrotask(() => {
+        editor.commands.setContent(content);
+      });
     }
   }, [content, editor]);
 

@@ -8,6 +8,8 @@
 .ProseMirror {
   @apply min-h-screen p-6 bg-white dark:bg-[#0B0B0B] text-gray-900 dark:text-white;
   outline: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* Slash Menu Tooltip */
