@@ -2,31 +2,22 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import rateLimit from 'express-rate-limit';
+import {
+  searchLimiter,
+  pageEditLimiter,
+  authLimiter,
+  readLimiter,
+  writeLimiter,
+  exportLimiter,
+  parserLimiter,
+  standardLimiter,
+  themeLimiter
+} from './config/rateLimits';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-
-// Adaptive Rate limiting
-// High limit for page editing (auto-save every 2 seconds)
-const pageEditLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // 500 requests per 15 minutes for page updates (auto-save)
-  message: 'Too many page updates, please slow down.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Standard limit for other endpoints
-const standardLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 175, // 175 requests per 15 minutes for other operations
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 // Middleware
 app.use(cors());
@@ -54,7 +45,7 @@ app.get('/', (req, res) => {
   res.json({
     name: 'Doxify API Gateway',
     version: '1.0.0',
-    description: 'Central API gateway for Doxify microservices',
+    description: 'Central API gateway for Doxify microservices with dynamic rate limiting',
     services: {
       auth: '/api/auth',
       projects: '/api/projects',
@@ -63,15 +54,142 @@ app.get('/', (req, res) => {
       theme: '/api/theme',
       export: '/api/export',
     },
+    rateLimits: {
+      search: '100 req/min',
+      pageEdit: '500 req/15min',
+      auth: '10 req/15min',
+      read: '200 req/5min',
+      write: '50 req/10min',
+      export: '10 req/hour',
+      parser: '30 req/10min',
+      theme: '20 req/30min',
+      standard: '150 req/15min'
+    },
+    docs: '/api/rate-limits'
   });
 });
 
-// Service proxies with rate limiting
-app.use('/api/auth', standardLimiter);
-app.use('/api/projects', standardLimiter);
-app.use('/api/parser', standardLimiter);
-app.use('/api/theme', standardLimiter);
-app.use('/api/export', standardLimiter);
+// Rate limit documentation endpoint
+app.get('/api/rate-limits', (req, res) => {
+  res.json({
+    title: 'Dynamic Rate Limiting Configuration',
+    description: 'Service-specific rate limits optimized for production',
+    limits: [
+      {
+        service: 'Search',
+        endpoint: '/api/pages/projects/:id/search',
+        window: '1 minute',
+        maxRequests: 100,
+        reason: 'High-volume read operations, user search queries'
+      },
+      {
+        service: 'Page Editing',
+        endpoint: '/api/pages/:pageId (PUT/PATCH)',
+        window: '15 minutes',
+        maxRequests: 500,
+        reason: 'Auto-save every 2 seconds during editing'
+      },
+      {
+        service: 'Authentication',
+        endpoint: '/api/auth/login, /register',
+        window: '15 minutes',
+        maxRequests: 10,
+        reason: 'Security: prevent brute force attacks'
+      },
+      {
+        service: 'Read Operations',
+        endpoint: 'GET requests',
+        window: '5 minutes',
+        maxRequests: 200,
+        reason: 'Standard data fetching'
+      },
+      {
+        service: 'Write Operations',
+        endpoint: 'POST/PUT/DELETE requests',
+        window: '10 minutes',
+        maxRequests: 50,
+        reason: 'Data modification operations'
+      },
+      {
+        service: 'Export',
+        endpoint: '/api/export',
+        window: '1 hour',
+        maxRequests: 10,
+        reason: 'Resource-intensive document generation'
+      },
+      {
+        service: 'Parser',
+        endpoint: '/api/parser',
+        window: '10 minutes',
+        maxRequests: 30,
+        reason: 'CPU-intensive markdown/content parsing'
+      },
+      {
+        service: 'Theme',
+        endpoint: '/api/theme',
+        window: '30 minutes',
+        maxRequests: 20,
+        reason: 'Infrequent theme customization operations'
+      },
+      {
+        service: 'Standard (Fallback)',
+        endpoint: 'All other endpoints',
+        window: '15 minutes',
+        maxRequests: 150,
+        reason: 'Default rate limit for uncategorized endpoints'
+      }
+    ],
+    headers: {
+      'RateLimit-Limit': 'Maximum requests allowed in window',
+      'RateLimit-Remaining': 'Requests remaining in current window',
+      'RateLimit-Reset': 'Time when limit resets (Unix timestamp)',
+    },
+    status429: {
+      message: 'Rate limit exceeded',
+      retryAfter: 'Seconds to wait before retry',
+      limit: 'Current rate limit value',
+      window: 'Time window for limit'
+    }
+  });
+});
+
+// ============================================
+// DYNAMIC RATE LIMITING BY SERVICE & OPERATION
+// ============================================
+
+// 1. AUTH SERVICE - Strict security limits
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth', standardLimiter); // Other auth endpoints
+
+// 2. SEARCH SERVICE - High volume read operations
+app.use('/api/pages/projects/:projectId/search', searchLimiter);
+
+// 3. EXPORT SERVICE - Resource intensive
+app.use('/api/export', exportLimiter);
+
+// 4. PARSER SERVICE - CPU intensive  
+app.use('/api/parser', parserLimiter);
+
+// 5. THEME SERVICE - Infrequent operations
+app.use('/api/theme', themeLimiter);
+
+// 6. PROJECTS SERVICE - Mix of read/write
+app.use('/api/projects/:projectId', (req, res, next) => {
+  // Write operations (create, update, delete)
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
+    return writeLimiter(req, res, next);
+  }
+  // Read operations (get, list)
+  return readLimiter(req, res, next);
+});
+app.use('/api/projects', (req, res, next) => {
+  if (req.method === 'POST') {
+    return writeLimiter(req, res, next);
+  }
+  return readLimiter(req, res, next);
+});
 
 app.use(
   '/api/auth',
@@ -128,16 +246,25 @@ app.use(
   })
 );
 
-// Apply high rate limit to page update endpoints (for auto-save)
+// 7. PAGES SERVICE - High frequency auto-save + reads
+// Page updates (auto-save) - Very high limit
 app.use('/api/pages/:pageId', (req, res, next) => {
   if (req.method === 'PUT' || req.method === 'PATCH') {
-    return pageEditLimiter(req, res, next);
+    return pageEditLimiter(req, res, next); // 500 per 15 min
   }
-  return standardLimiter(req, res, next);
+  if (req.method === 'DELETE') {
+    return writeLimiter(req, res, next);
+  }
+  return readLimiter(req, res, next);
 });
 
-// Apply standard rate limit to other pages endpoints
-app.use('/api/pages', standardLimiter);
+// Other pages operations
+app.use('/api/pages', (req, res, next) => {
+  if (req.method === 'POST') {
+    return writeLimiter(req, res, next);
+  }
+  return readLimiter(req, res, next);
+});
 
 app.use(
   '/api/pages',
