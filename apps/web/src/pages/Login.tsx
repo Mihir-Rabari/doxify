@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { FileText, ArrowRight, Mail, Lock } from 'lucide-react';
+import { FileText, Mail, Lock, Github, Chrome } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { Input, Button } from '@/components/ui';
@@ -31,72 +31,117 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0B0B0B] flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 group mb-8">
-            <div className="p-2 rounded-xl bg-emerald-500/10">
-              <FileText className="w-6 h-6 text-emerald-500" />
+    <div className="min-h-screen bg-[#0B0B0B] flex">
+      {/* Left Side - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="max-w-md w-full">
+          {/* Logo */}
+          <Link to="/" className="inline-flex items-center gap-2 mb-12">
+            <div className="p-2 rounded-lg bg-emerald-500/10">
+              <FileText className="w-5 h-5 text-emerald-500" />
             </div>
-            <span className="text-2xl font-semibold text-gray-900 dark:text-white">Doxify</span>
+            <span className="text-xl font-semibold text-white">Doxify</span>
           </Link>
-          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white mt-8 mb-2 tracking-tight">
-            Welcome back
-          </h1>
-          <p className="text-gray-600 dark:text-neutral-400">Sign in to continue to your workspace</p>
-        </div>
 
-        {/* Login Card */}
-        <div className="border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 rounded-2xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-semibold text-white mb-2">
+              Welcome back
+            </h1>
+            <p className="text-neutral-400">Sign in to your account</p>
+          </div>
+
+          {/* OAuth Buttons */}
+          <div className="space-y-3 mb-6">
+            <button className="w-full h-11 flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-white transition-colors">
+              <Github className="w-5 h-5" />
+              Continue with GitHub
+            </button>
+            <button className="w-full h-11 flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-white transition-colors">
+              <Chrome className="w-5 h-5" />
+              Continue with Google
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-neutral-800"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-[#0B0B0B] text-neutral-500">or</span>
+            </div>
+          </div>
+
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Email"
               type="email"
-              icon={Mail}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
             />
 
-            {/* Password */}
-            <Input
-              label="Password"
-              type="password"
-              icon={Lock}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-neutral-300">Password</label>
+                <Link to="/forgot-password" className="text-sm text-neutral-400 hover:text-white transition-colors">
+                  Forgot Password?
+                </Link>
+              </div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-transparent text-white placeholder-neutral-500 transition-all"
+                required
+              />
+            </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               variant="primary"
               size="lg"
-              icon={ArrowRight}
-              iconPosition="right"
               isLoading={loginMutation.isPending}
-              className="w-full"
+              className="w-full bg-emerald-500 hover:bg-emerald-600"
             >
               Sign In
             </Button>
           </form>
 
-          {/* Footer Links */}
-          <div className="mt-6 text-center space-y-3">
-            <p className="text-sm text-gray-600 dark:text-neutral-400">
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-neutral-400">
               Don't have an account?{' '}
-              <Link to="/register" className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline">
-                Sign up
+              <Link to="/register" className="text-emerald-500 hover:text-emerald-400 font-medium">
+                Sign Up Now
               </Link>
             </p>
-            <Link to="/" className="block text-sm text-gray-500 dark:text-neutral-500 hover:text-gray-900 dark:hover:text-white transition-colors">
-              ← Back to home
-            </Link>
+          </div>
+
+          <p className="mt-8 text-xs text-neutral-500 text-center">
+            By continuing, you agree to Doxify's Terms of Service and Privacy Policy.
+          </p>
+        </div>
+      </div>
+
+      {/* Right Side - Testimonial */}
+      <div className="hidden lg:flex lg:w-1/2 bg-neutral-950 items-center justify-center p-12">
+        <div className="max-w-2xl">
+          <blockquote className="text-4xl font-light text-white leading-relaxed mb-8">
+            "Doxify transformed how we build documentation. The AI-powered features and beautiful UI made our docs truly shine."
+          </blockquote>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-black font-semibold">
+              M
+            </div>
+            <div>
+              <p className="text-white font-medium">@mihi_rabari</p>
+              <p className="text-neutral-400 text-sm">Founder, Doxify</p>
+            </div>
           </div>
         </div>
       </div>
