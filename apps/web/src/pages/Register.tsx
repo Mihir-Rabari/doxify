@@ -44,9 +44,9 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0B] flex">
+    <div className="min-h-screen bg-neutral-950 flex">
       {/* Left Side - Register Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-[#0A0A0A] border-r border-neutral-800">
         <div className="max-w-md w-full">
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-2 mb-12">
@@ -131,7 +131,7 @@ export default function Register() {
       </div>
 
       {/* Right Side - Testimonial */}
-      <div className="hidden lg:flex lg:w-1/2 bg-neutral-950 items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0B0B0B] items-center justify-center p-12">
         <div className="max-w-2xl">
           <blockquote className="text-4xl font-light text-white leading-relaxed mb-8">
             "Building documentation has never been this easy. Doxify's intuitive editor and AI features save us hours every week."
