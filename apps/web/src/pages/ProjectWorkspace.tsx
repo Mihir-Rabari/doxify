@@ -20,6 +20,7 @@ import { sectionService } from '@/services/sectionService';
 import { exportService } from '@/services/exportService';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Button, Input, Badge } from '@/components/ui';
 import Loading from '@/components/ui/Loading';
 import WYSIWYGEditor from '@/components/Editor/WYSIWYGEditor';
 import SearchBar from '@/components/SearchBar';
@@ -414,13 +415,15 @@ export default function ProjectWorkspace() {
           <div className="w-64 border-r border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#0C0C0C] flex flex-col">
             {/* Sidebar Header */}
             <div className="p-4 border-b border-gray-200 dark:border-neutral-800">
-              <button
+              <Button
                 onClick={() => setIsCreatePageModalOpen(true)}
-                className="w-full h-9 bg-emerald-500 hover:bg-emerald-600 text-black text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                variant="primary"
+                size="sm"
+                icon={Plus}
+                className="w-full"
               >
-                <Plus className="w-4 h-4" />
                 New Page
-              </button>
+              </Button>
             </div>
 
             {/* Pages List - Organized by Sections */}
@@ -588,24 +591,23 @@ export default function ProjectWorkspace() {
               </div>
 
               <div className="flex gap-3 justify-end pt-2">
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     setIsCreatePageModalOpen(false);
                     setNewPageTitle('');
                     setNewPageSection('');
                   }}
-                  className="h-10 px-4 text-sm font-medium text-gray-700 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createPageMutation.isPending}
-                  className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-black text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => document.querySelector('form')?.requestSubmit()}
+                  isLoading={createPageMutation.isPending}
                 >
-                  {createPageMutation.isPending ? 'Creating...' : 'Create Page'}
-                </button>
+                  Create Page
+                </Button>
               </div>
             </form>
           </div>

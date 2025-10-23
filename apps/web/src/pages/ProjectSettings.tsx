@@ -5,6 +5,7 @@ import { ArrowLeft, Palette, Save, Trash2, AlertTriangle } from 'lucide-react';
 import { projectService } from '@/services/projectService';
 import { themeService } from '@/services/themeService';
 import { Theme, UpdateProjectData } from '@/types';
+import { Button, Input, Textarea, Modal } from '@/components/ui';
 import Loading from '@/components/ui/Loading';
 import toast from 'react-hot-toast';
 
