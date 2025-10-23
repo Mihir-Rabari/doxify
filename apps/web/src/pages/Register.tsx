@@ -134,15 +134,15 @@ export default function Register() {
       <div className="hidden lg:flex lg:w-1/2 bg-[#0B0B0B] items-center justify-center p-12">
         <div className="max-w-2xl">
           <blockquote className="text-4xl font-light text-white leading-relaxed mb-8">
-            "Building documentation has never been this easy. Doxify's intuitive editor and AI features save us hours every week."
+            "Most tools are built for everyone. I build tools for myself. If it works for my projects, I ship it. Simple as that."
           </blockquote>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-              S
+            <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-black font-semibold">
+              M
             </div>
             <div>
-              <p className="text-white font-medium">@sarah_dev</p>
-              <p className="text-neutral-400 text-sm">Engineering Lead, TechCorp</p>
+              <p className="text-white font-medium">Mihir Rabari</p>
+              <p className="text-neutral-400 text-sm">Indie Developer • Solving my own problems</p>
             </div>
           </div>
         </div>

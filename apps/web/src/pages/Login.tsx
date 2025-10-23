@@ -109,15 +109,15 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 bg-[#0B0B0B] items-center justify-center p-12">
         <div className="max-w-2xl">
           <blockquote className="text-4xl font-light text-white leading-relaxed mb-8">
-            "Doxify transformed how we build documentation. The AI-powered features and beautiful UI made our docs truly shine."
+            "I built Doxify because I needed a better way to document my projects. As an indie dev, I make tools that solve my own problems - and this one turned out pretty damn good."
           </blockquote>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-black font-semibold">
               M
             </div>
             <div>
-              <p className="text-white font-medium">@mihi_rabari</p>
-              <p className="text-neutral-400 text-sm">Founder, Doxify</p>
+              <p className="text-white font-medium">Mihir Rabari</p>
+              <p className="text-neutral-400 text-sm">Indie Developer • Building tools I need</p>
             </div>
           </div>
         </div>
