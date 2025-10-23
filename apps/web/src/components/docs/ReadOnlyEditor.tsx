@@ -6,7 +6,7 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import { common, createLowlight } from 'lowlight';
 import { useEffect } from 'react';
-import { CustomCodeBlock } from '../Editor/CodeBlockExtension';
+import { ReadOnlyCustomCodeBlock } from './ReadOnlyCodeBlockExtension';
 import '../Editor/editor-styles.css';
 
 const lowlight = createLowlight(common);
@@ -34,7 +34,7 @@ export default function ReadOnlyEditor({ content }: ReadOnlyEditorProps) {
       TaskItem.configure({
         nested: true,
       }),
-      CustomCodeBlock.configure({
+      ReadOnlyCustomCodeBlock.configure({
         lowlight,
       }),
     ],
