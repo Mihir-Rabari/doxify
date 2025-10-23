@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { FileText, User, Mail, Lock, Github, Chrome } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { Input, Button } from '@/components/ui';
@@ -64,28 +64,6 @@ export default function Register() {
             <p className="text-neutral-400">Start building beautiful documentation</p>
           </div>
 
-          {/* OAuth Buttons */}
-          <div className="space-y-3 mb-6">
-            <button className="w-full h-11 flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-white transition-colors">
-              <Github className="w-5 h-5" />
-              Continue with GitHub
-            </button>
-            <button className="w-full h-11 flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-white transition-colors">
-              <Chrome className="w-5 h-5" />
-              Continue with Google
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-neutral-800"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[#0B0B0B] text-neutral-500">or</span>
-            </div>
-          </div>
-
           {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
@@ -129,9 +107,8 @@ export default function Register() {
             <Button
               type="submit"
               variant="primary"
-              size="lg"
               isLoading={registerMutation.isPending}
-              className="w-full bg-emerald-500 hover:bg-emerald-600"
+              className="w-full h-10 bg-emerald-500 hover:bg-emerald-600 text-black font-medium"
             >
               Create Account
             </Button>
