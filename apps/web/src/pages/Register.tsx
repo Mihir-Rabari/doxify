@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { FileText, ArrowRight } from 'lucide-react';
+import { FileText, ArrowRight, User, Mail, Lock } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
+import { Input, Button } from '@/components/ui';
 import toast from 'react-hot-toast';
 
 export default function Register() {
@@ -63,81 +64,63 @@ export default function Register() {
         <div className="border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
-                className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
-                required
-              />
-            </div>
+            <Input
+              label="Full Name"
+              type="text"
+              icon={User}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="John Doe"
+              required
+            />
 
             {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
-                required
-              />
-            </div>
+            <Input
+              label="Email"
+              type="email"
+              icon={Mail}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
 
             {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
-                required
-                minLength={6}
-              />
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              icon={Lock}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              helperText="At least 6 characters"
+              required
+              minLength={6}
+            />
 
             {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
-                required
-              />
-            </div>
+            <Input
+              label="Confirm Password"
+              type="password"
+              icon={Lock}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
 
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
-              disabled={registerMutation.isPending}
-              className="w-full h-10 bg-emerald-500 hover:bg-emerald-600 text-black font-medium rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+              variant="primary"
+              size="lg"
+              icon={ArrowRight}
+              iconPosition="right"
+              isLoading={registerMutation.isPending}
+              className="w-full"
             >
-              {registerMutation.isPending ? (
-                'Creating account...'
-              ) : (
-                <>
-                  Create Account
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </>
-              )}
-            </button>
+              Create Account
+            </Button>
           </form>
 
           {/* Footer Links */}
