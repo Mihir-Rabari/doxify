@@ -3,7 +3,7 @@ node_modules/
 .npm/
 .pnp/
 .pnp.js
-
+agents/
 # Build outputs
 dist/
 build/
