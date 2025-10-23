@@ -220,7 +220,9 @@ export default function PublicDocumentation() {
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSelectPage={(pageSlug) => {
-          navigate(`/sites/${slug}/${pageSlug}`);
+          // Remove leading slash if present to avoid double slashes
+          const cleanSlug = pageSlug.startsWith('/') ? pageSlug.slice(1) : pageSlug;
+          navigate(`/sites/${slug}/${cleanSlug}`);
         }}
       />
 
