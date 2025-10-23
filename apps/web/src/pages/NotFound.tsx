@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft, FileQuestion } from 'lucide-react';
+import { Button } from '@/components/ui';
 
 export default function NotFound() {
   return (
@@ -16,20 +17,18 @@ export default function NotFound() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            to="/dashboard"
-            className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-black font-medium rounded-lg transition-colors flex items-center gap-2"
-          >
-            <Home className="w-4 h-4" />
-            Go to Dashboard
+          <Link to="/dashboard">
+            <Button variant="primary" icon={Home}>
+              Go to Dashboard
+            </Button>
           </Link>
-          <button
+          <Button
+            variant="outline"
+            icon={ArrowLeft}
             onClick={() => window.history.back()}
-            className="h-10 px-4 border border-gray-300 dark:border-neutral-800 text-gray-700 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg transition-colors flex items-center gap-2 font-medium"
           >
-            <ArrowLeft className="w-4 h-4" />
             Go Back
-          </button>
+          </Button>
         </div>
       </div>
     </div>

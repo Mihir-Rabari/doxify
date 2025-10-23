@@ -5,8 +5,9 @@ import { Plus, FileText, Settings, Trash2, LogOut, Moon, Sun, Bell } from 'lucid
 import { projectService } from '@/services/projectService';
 import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/contexts/ThemeContext';
-import toast from 'react-hot-toast';
+import { Modal, Button, Input, Textarea, Badge } from '@/components/ui';
 import Loading from '@/components/ui/Loading';
+import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
 export default function Dashboard() {
@@ -21,7 +22,7 @@ export default function Dashboard() {
   // Fetch projects
   const { data: projectsData, isLoading } = useQuery({
     queryKey: ['projects', user?._id],
-    queryFn: () => projectService.getProjects(user!._id),
+    queryFn: () => projectService.listProjects(user!._id),
     enabled: !!user,
   });
 
@@ -135,13 +136,13 @@ export default function Dashboard() {
             <h1 className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">Your Projects</h1>
             <p className="text-sm text-gray-600 dark:text-neutral-400 mt-1">Create and manage documentation projects</p>
           </div>
-          <button
+          <Button
             onClick={() => setShowNewProjectModal(true)}
-            className="bg-emerald-500 hover:bg-emerald-600 text-black font-medium rounded-lg h-10 px-4 flex items-center gap-2 transition-colors"
+            variant="primary"
+            icon={Plus}
           >
-            <Plus className="w-4 h-4" />
             New Project
-          </button>
+          </Button>
         </header>
 
         {/* Projects Grid */}
@@ -154,13 +155,13 @@ export default function Dashboard() {
             <p className="text-gray-600 dark:text-neutral-400 mb-6 max-w-md mx-auto">
               Get started by creating your first documentation project
             </p>
-            <button
+            <Button
               onClick={() => setShowNewProjectModal(true)}
-              className="bg-emerald-500 hover:bg-emerald-600 text-black font-medium rounded-lg h-10 px-6 inline-flex items-center gap-2 transition-colors"
+              variant="primary"
+              icon={Plus}
             >
-              <Plus className="w-4 h-4" />
               Create Your First Project
-            </button>
+            </Button>
           </div>
         ) : (
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -185,9 +186,9 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <span className="px-2 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-md flex-shrink-0">
+                  <Badge variant="success" size="sm">
                     Active
-                  </span>
+                  </Badge>
                 </div>
 
                 {/* Description */}
@@ -228,69 +229,61 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* Create Project Modal - Vercel Style */}
-      {showNewProjectModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-neutral-900/80 backdrop-blur-xl border border-gray-200 dark:border-neutral-800 rounded-2xl p-6 w-full max-w-[400px] shadow-2xl">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Create New Project</h2>
-            <p className="text-sm text-gray-600 dark:text-neutral-400 mb-6">Start building your documentation</p>
-            
-            <form onSubmit={handleCreateProject} className="space-y-4">
-              {/* Project Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Project Name
-                </label>
-                <input
-                  type="text"
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                  placeholder="My Documentation"
-                  className="w-full h-10 bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
-                  required
-                  autoFocus
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Description <span className="text-gray-400 dark:text-neutral-500 font-normal">(optional)</span>
-                </label>
-                <textarea
-                  value={newProjectDescription}
-                  onChange={(e) => setNewProjectDescription(e.target.value)}
-                  placeholder="A brief description..."
-                  rows={3}
-                  className="w-full bg-white dark:bg-[#0B0B0B] border border-gray-300 dark:border-neutral-800 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all resize-none"
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3 justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowNewProjectModal(false);
-                    setNewProjectName('');
-                    setNewProjectDescription('');
-                  }}
-                  className="h-10 px-4 text-sm font-medium text-gray-700 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending}
-                  className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-black text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {createMutation.isPending ? 'Creating...' : 'Create Project'}
-                </button>
-              </div>
-            </form>
+      {/* Create Project Modal */}
+      <Modal
+        isOpen={showNewProjectModal}
+        onClose={() => {
+          setShowNewProjectModal(false);
+          setNewProjectName('');
+          setNewProjectDescription('');
+        }}
+        title="Create New Project"
+        description="Start building your documentation"
+        icon={Plus}
+        iconColor="emerald"
+        maxWidth="md"
+        footer={
+          <div className="flex gap-3 justify-end w-full">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowNewProjectModal(false);
+                setNewProjectName('');
+                setNewProjectDescription('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateProject}
+              isLoading={createMutation.isPending}
+            >
+              Create Project
+            </Button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <form onSubmit={handleCreateProject} className="space-y-4">
+          <Input
+            label="Project Name"
+            type="text"
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            placeholder="My Documentation"
+            required
+            autoFocus
+          />
+
+          <Textarea
+            label="Description (optional)"
+            value={newProjectDescription}
+            onChange={(e) => setNewProjectDescription(e.target.value)}
+            placeholder="A brief description..."
+            rows={3}
+          />
+        </form>
+      </Modal>
     </div>
   );
 }
