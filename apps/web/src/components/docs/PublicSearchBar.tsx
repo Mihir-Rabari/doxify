@@ -129,18 +129,18 @@ export default function PublicSearchBar({ projectId, projectSlug, onSelectPage, 
       />
 
       {/* Search Modal */}
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-xl z-50 px-4">
-        <div className="bg-[#0D0D0D] rounded-xl shadow-2xl border border-neutral-800 overflow-hidden">
+      <div className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 px-4">
+        <div className="bg-[#0D0D0D] rounded-2xl shadow-2xl border border-neutral-800 overflow-hidden">
           {/* Search Input */}
-          <div className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-neutral-800">
-            <Search className="w-4 h-4 text-neutral-500" />
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-800">
+            <Search className="w-5 h-5 text-neutral-500" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search documentation..."
-              className="flex-1 bg-transparent text-sm text-white placeholder-neutral-500 focus:outline-none"
+              className="flex-1 bg-transparent text-white placeholder-neutral-500 focus:outline-none"
               autoFocus
             />
             {query && (
@@ -148,40 +148,40 @@ export default function PublicSearchBar({ projectId, projectSlug, onSelectPage, 
                 onClick={() => setQuery('')}
                 className="p-1 hover:bg-neutral-800 rounded transition-colors"
               >
-                <X className="w-3.5 h-3.5 text-neutral-500" />
+                <X className="w-4 h-4 text-neutral-500" />
               </button>
             )}
           </div>
 
           {/* Results */}
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-96 overflow-y-auto">
             {debouncedQuery && results.length === 0 && !isSearching ? (
-              <div className="p-6 text-center text-neutral-400">
-                <Search className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No pages found for "{debouncedQuery}"</p>
-                <p className="text-xs mt-1.5 text-neutral-500">Try different keywords</p>
+              <div className="p-8 text-center text-neutral-400">
+                <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No pages found for "{debouncedQuery}"</p>
+                <p className="text-xs mt-2 text-neutral-500">Try different keywords</p>
               </div>
             ) : results.length > 0 ? (
-              <div className="py-1.5">
+              <div className="py-2">
                 {results.map((result, index) => (
                   <button
                     key={result._id}
                     ref={(el) => (resultsRef.current[index] = el)}
                     onClick={() => handleSelect(result.slug)}
-                    className={`w-full px-3.5 py-2.5 text-left transition-colors group ${
+                    className={`w-full px-4 py-3 text-left transition-colors group ${
                       index === selectedIndex
                         ? 'bg-emerald-500/10'
                         : 'hover:bg-neutral-800'
                     }`}
                   >
                     <div className="flex items-start gap-2">
-                      <FileText className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${
+                      <FileText className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
                         index === selectedIndex 
                           ? 'text-emerald-400' 
                           : 'text-neutral-500'
                       }`} />
                       <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-medium transition-colors ${
+                        <div className={`font-medium transition-colors ${
                           index === selectedIndex
                             ? 'text-emerald-400'
                             : 'text-white group-hover:text-emerald-400'
@@ -194,12 +194,12 @@ export default function PublicSearchBar({ projectId, projectSlug, onSelectPage, 
                           </div>
                         )}
                         {result.preview && (
-                          <div className="text-xs text-neutral-400 line-clamp-2 mt-0.5">
+                          <div className="text-sm text-neutral-400 line-clamp-2 mt-1">
                             {result.preview}
                           </div>
                         )}
                         {result.matchedIn === 'content' && (
-                          <div className="flex items-center gap-1 text-xs text-neutral-500 mt-0.5">
+                          <div className="flex items-center gap-1 text-xs text-neutral-500 mt-1">
                             <Clock className="w-3 h-3" />
                             Matched in content
                           </div>
@@ -210,21 +210,21 @@ export default function PublicSearchBar({ projectId, projectSlug, onSelectPage, 
                 ))}
               </div>
             ) : (
-              <div className="p-6 text-center text-neutral-400">
-                <Search className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                <p className="text-sm font-medium mb-1.5">Quick Search</p>
-                <p className="text-xs text-neutral-500">Start typing to search pages by title or content</p>
-                <div className="flex items-center justify-center gap-3 mt-3 text-xs">
+              <div className="p-8 text-center text-neutral-400">
+                <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium mb-2">Quick Search</p>
+                <p className="text-sm text-neutral-500">Start typing to search pages by title or content</p>
+                <div className="flex items-center justify-center gap-4 mt-4 text-xs">
                   <div className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded border border-neutral-700 text-[10px]">↑↓</kbd>
+                    <kbd className="px-2 py-1 bg-neutral-800 rounded border border-neutral-700">↑↓</kbd>
                     <span className="text-neutral-500">Navigate</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded border border-neutral-700 text-[10px]">↵</kbd>
+                    <kbd className="px-2 py-1 bg-neutral-800 rounded border border-neutral-700">↵</kbd>
                     <span className="text-neutral-500">Select</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded border border-neutral-700 text-[10px]">ESC</kbd>
+                    <kbd className="px-2 py-1 bg-neutral-800 rounded border border-neutral-700">ESC</kbd>
                     <span className="text-neutral-500">Close</span>
                   </div>
                 </div>

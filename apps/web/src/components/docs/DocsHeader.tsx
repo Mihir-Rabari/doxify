@@ -52,14 +52,14 @@ export default function DocsHeader({ projectName, projectSlug, projectId, onSear
       </div>
 
       {/* Center - Search Button */}
-      <div className="flex-1 max-w-2xl mx-auto">
+      <div className="flex-1 max-w-md mx-auto">
         <button
           onClick={onSearchClick}
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-neutral-400 bg-neutral-900/50 border border-neutral-800 rounded-lg hover:bg-neutral-800/50 hover:border-neutral-700 transition-all duration-200"
+          className="w-full flex items-center gap-2 px-2.5 py-1 text-xs text-neutral-400 bg-neutral-900/50 border border-neutral-800 rounded-md hover:bg-neutral-800/50 hover:border-neutral-700 transition-all duration-200"
         >
-          <Search className="w-4 h-4 flex-shrink-0" />
-          <span className="flex-1 text-left">Search documentation...</span>
-          <kbd className="px-1.5 py-0.5 text-[10px] text-neutral-500 bg-neutral-800/80 rounded border border-neutral-700 font-mono">
+          <Search className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="flex-1 text-left">Search docs...</span>
+          <kbd className="px-1.5 py-0.5 text-[9px] text-neutral-500 bg-neutral-800/80 rounded border border-neutral-700 font-mono">
             ⌘K
           </kbd>
         </button>
