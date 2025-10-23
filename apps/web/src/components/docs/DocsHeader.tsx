@@ -1,18 +1,31 @@
 import { Link } from 'react-router-dom';
 import { Copy, ExternalLink, Sun, Moon, Settings, Search } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 interface DocsHeaderProps {
   projectName: string;
   projectSlug: string;
   projectId: string;
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
+  onSearchClick: () => void;
 }
 
-export default function DocsHeader({ projectName, projectSlug, projectId, searchQuery, onSearchChange }: DocsHeaderProps) {
+export default function DocsHeader({ projectName, projectSlug, projectId, onSearchClick }: DocsHeaderProps) {
   const { theme, toggleTheme } = useTheme();
+
+  // Keyboard shortcut: Cmd/Ctrl + K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        onSearchClick();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onSearchClick]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -38,21 +51,18 @@ export default function DocsHeader({ projectName, projectSlug, projectId, search
         </Link>
       </div>
 
-      {/* Center - Search Bar */}
+      {/* Center - Search Button */}
       <div className="flex-1 max-w-2xl mx-auto">
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none transition-colors group-focus-within:text-emerald-500" />
-          <input
-            type="text"
-            placeholder="Search documentation..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-neutral-900/50 border border-neutral-800 rounded-lg px-3 py-1.5 pl-9 pr-12 text-sm text-neutral-200 placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 focus:outline-none transition-all duration-200"
-          />
-          <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 px-1.5 py-0.5 text-[10px] text-neutral-500 bg-neutral-800/80 rounded border border-neutral-700 font-mono">
+        <button
+          onClick={onSearchClick}
+          className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-neutral-400 bg-neutral-900/50 border border-neutral-800 rounded-lg hover:bg-neutral-800/50 hover:border-neutral-700 transition-all duration-200"
+        >
+          <Search className="w-4 h-4 flex-shrink-0" />
+          <span className="flex-1 text-left">Search documentation...</span>
+          <kbd className="px-1.5 py-0.5 text-[10px] text-neutral-500 bg-neutral-800/80 rounded border border-neutral-700 font-mono">
             ⌘K
           </kbd>
-        </div>
+        </button>
       </div>
 
       {/* Right - Action Buttons */}

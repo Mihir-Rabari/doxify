@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import Loading from '../components/ui/Loading';
@@ -7,6 +7,7 @@ import DocsHeader from '../components/docs/DocsHeader';
 import DocsSidebar from '../components/docs/DocsSidebar';
 import DocsContent from '../components/docs/DocsContent';
 import DocsTOC from '../components/docs/DocsTOC';
+import PublicSearchBar from '../components/docs/PublicSearchBar';
 
 interface Project {
   _id: string;
@@ -38,7 +39,8 @@ interface TocItem {
 
 export default function PublicDocumentation() {
   const { slug, pageSlug } = useParams<{ slug: string; pageSlug?: string }>();
-  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
   const [activeHeading, setActiveHeading] = useState<string>('');
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -208,8 +210,18 @@ export default function PublicDocumentation() {
         projectName={projectData.name}
         projectSlug={slug!}
         projectId={projectData._id}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchClick={() => setSearchOpen(true)}
+      />
+
+      {/* SEARCH MODAL */}
+      <PublicSearchBar
+        projectId={projectData._id}
+        projectSlug={slug!}
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onSelectPage={(pageSlug) => {
+          navigate(`/sites/${slug}/${pageSlug}`);
+        }}
       />
 
       {/* MAIN CONTENT AREA */}
