@@ -13,8 +13,6 @@ export const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    console.log('🔷 [API] Outgoing request:', config.method?.toUpperCase(), config.url);
-    console.log('🔷 [API] Request data:', config.data);
     const token = localStorage.getItem('token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -22,7 +20,6 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('❌ [API] Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -30,7 +27,6 @@ api.interceptors.request.use(
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ [API] Response received:', response.status, response.config.url);
     return response;
   },
   (error: AxiosError<{ message?: string }>) => {

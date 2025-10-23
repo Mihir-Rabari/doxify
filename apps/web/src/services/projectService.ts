@@ -8,11 +8,10 @@ import {
 } from '@/types';
 
 export const projectService = {
-  async getProjects(userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Project>> {
+  async listProjects(userId: string, page: number = 1, limit: number = 10): Promise<PaginatedResponse<Project>> {
     const response = await api.get(
       `/api/projects?userId=${userId}&page=${page}&limit=${limit}`
     );
-    console.log('🔷 [PROJECT SERVICE] Full response:', response.data);
     
     // Backend returns: { success, data: [...], pagination }
     // We need to return: { data: [...], pagination }
