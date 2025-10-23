@@ -1,8 +1,8 @@
 # 🚀 Doxify
 
-**Build, edit, and deploy stunning documentation — powered by MDX, theme control, and AI.**
+**Beautiful documentation platform built by an indie developer who makes tools based on his project needs.**
 
-Doxify is a modern documentation creation and site generation platform that combines CMS functionality with MDX parsing and static site export capabilities.
+Doxify is a modern documentation platform with a beautiful CMS interface, MDX support, theme customization, and static site generation.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-green)
 ![License](https://img.shields.io/badge/license-MIT-blue)
@@ -46,66 +46,40 @@ Doxify uses a microservices architecture:
    └───────────┘
 ```
 
-## 🚀 Quick Start
+## 🚀 Quick Start with Docker
 
 ### Prerequisites
 
 - Docker & Docker Compose
-- Node.js 20+ (for local development)
 
-### 1. Clone the Repository
+### 1. Clone & Configure
 
 ```bash
 git clone https://github.com/mihir-rabari/doxify.git
 cd doxify
+cp .env.example .env
 ```
 
-### 2. Start Backend & Frontend
-
-#### **Option A: PM2 (Recommended for Development - Fastest!)** ⚡
-```bash
-start-pm2.bat
-```
-✅ No Docker needed  
-✅ Uses local MongoDB  
-✅ Auto-installs dependencies  
-✅ Starts everything in one command  
-👉 **Skip to step 4** - Everything is ready!
-
-#### **Option B: Docker with Local MongoDB (If PM2 not preferred)**
-```bash
-start-local-mongo.bat
-```
-👉 **Skip to step 4** (frontend starts automatically)
-
-#### **Option C: Docker with MongoDB Container (Downloads ~500MB)**
-```bash
-docker-compose up --build
-```
-
-This will start:
-- MongoDB (Local/Docker)
-- API Gateway on port 4000
-- All microservices (Auth, Projects, Pages, Parser, Theme, Export)
-- Frontend (PM2 only)
-
-### 3. Start Frontend
+### 2. Start Everything
 
 ```bash
-cd apps/web
-npm install
-npm run dev
+docker-compose -f docker-compose.production.yml up --build
 ```
 
-Frontend will be available at `http://localhost:5173`
+This starts:
+- **Frontend:** http://localhost:3000
+- **API Gateway:** http://localhost:4000
+- **MongoDB:** Port 27017
+- **All 9 microservices**
 
-### 4. Create Your First Project
+### 3. Create Your First Project
 
-1. Register an account at `http://localhost:5173/register`
-2. Login and create a new documentation project
-3. Add pages and start writing in MDX
-4. Customize your theme
-5. Export as a Next.js static site
+1. Visit http://localhost:3000/register
+2. Create an account
+3. Create a new documentation project
+4. Start writing in MDX
+5. Customize your theme
+6. Export as a static site
 
 ## 📁 Project Structure
 
@@ -150,77 +124,44 @@ doxify/
 - **UI Components:** Radix UI
 - **Icons:** Lucide React
 
-## 📖 Documentation
+## 📖 API Documentation
 
-- **[PM2 Setup](./PM2_SETUP.md)** - 🚀 **Recommended for development** - Fast, no Docker!
-- **[Backend API Documentation](./backend.md)** - Complete API reference
-- **[Setup Guide](./SETUP.md)** - Detailed installation & troubleshooting
-- **[Local MongoDB Setup](./LOCAL_MONGO_SETUP.md)** - Use local MongoDB (saves bandwidth!)
-- **[Quick Reference](./QUICK_REFERENCE.md)** - Commands cheat sheet
-- **[Agent Context](./agents/)** - AI development context files
+All services run behind the API Gateway at `http://localhost:4000`:
 
-## 🔧 Development
+- **Auth:** `/api/auth/*`
+- **Projects:** `/api/projects/*`
+- **Pages:** `/api/pages/*`
+- **Theme:** `/api/theme/*`
+- **Export:** `/api/export/*`
 
-### Backend Development (Without Docker)
+## 🔧 Environment Configuration
 
-Each service can be run independently:
+Edit `.env` file for production:
 
-```bash
-cd services/auth-service
-npm install
-npm run dev
-```
-
-Repeat for each service. Make sure MongoDB is running on port 27017.
-
-### Frontend Development
-
-```bash
-cd apps/web
-npm install
-npm run dev
-```
-
-### Environment Variables
-
-Copy `.env.example` to `.env` in `apps/web`:
-
-```bash
-cd apps/web
-cp .env.example .env
+```env
+MONGO_PASSWORD=your_secure_password
+JWT_SECRET=your_super_secret_key
+API_URL=https://yourdomain.com
 ```
 
 ## 🐳 Docker Commands
 
 ```bash
 # Start all services
-docker-compose up
-
-# Start with rebuild
-docker-compose up --build
+docker-compose -f docker-compose.production.yml up -d
 
 # Stop services
-docker-compose down
+docker-compose -f docker-compose.production.yml down
 
 # View logs
-docker-compose logs -f [service-name]
+docker-compose -f docker-compose.production.yml logs -f
 
-# Remove volumes (clean reset)
-docker-compose down -v
+# Rebuild & restart
+docker-compose -f docker-compose.production.yml up --build -d
+
+# Clean reset
+docker-compose -f docker-compose.production.yml down -v
 ```
-
-## 📝 API Endpoints
-
-### Base URL: `http://localhost:4000`
-
-- **Auth:** `/api/auth/*`
-- **Projects:** `/api/projects/*`
-- **Pages:** `/api/pages/*`
-- **Parser:** `/api/parser/*`
-- **Theme:** `/api/theme/*`
-- **Export:** `/api/export/*`
-
-See [backend.md](./backend.md) for complete API documentation.
 
 ## 🎨 Default Theme
 
@@ -240,29 +181,20 @@ Coming soon:
 - Integration tests
 - E2E tests with Playwright
 
-## 🚀 Deployment
+## 🚀 Production Deployment
 
-### Frontend
-Deploy to Vercel, Netlify, or any static hosting:
-
-```bash
-cd apps/web
-npm run build
-```
-
-### Backend
-Deploy with Docker to any VPS or cloud provider:
+### Deploy to any VPS (DigitalOcean, AWS, etc.)
 
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+# On your server
+git clone https://github.com/mihir-rabari/doxify.git
+cd doxify
+cp .env.example .env
+# Edit .env with production values
+docker-compose -f docker-compose.production.yml up --build -d
 ```
 
-### Exported Sites
-Generated Next.js sites can be deployed to:
-- Vercel
-- Netlify
-- GitHub Pages
-- Any Node.js hosting
+That's it! Your Doxify instance is live.
 
 ## 📋 Roadmap
 
@@ -299,14 +231,10 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-**Mihir Kanubhai Rabari**
+**Mihir Rabari** - Indie Developer
 
-## 🙏 Acknowledgments
-
-- Inspired by Docusaurus, Notion, and Supabase
-- Built with amazing open-source tools
-- Special thanks to the unified/remark ecosystem
+I build tools based on my project needs. If it works for me, I ship it.
 
 ---
 
-**Built with ❤️ by Mihir Rabari**
+**Built with ❤️ by an indie developer solving his own problems**

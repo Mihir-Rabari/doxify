@@ -1,0 +1,229 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: doxify-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-doxify}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-doxify123}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - doxify-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Frontend - React App
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-builder
+    container_name: doxify-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=${API_URL:-http://localhost:4000}
+    networks:
+      - doxify-network
+    depends_on:
+      - api-gateway
+
+  # API Gateway - Port 4000
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-api-gateway
+    restart: unless-stopped
+    command: node services/api-gateway/index.js
+    ports:
+      - "${API_GATEWAY_PORT:-4000}:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - AUTH_SERVICE_URL=http://auth-service:4001
+      - PROJECTS_SERVICE_URL=http://projects-service:4002
+      - PAGES_SERVICE_URL=http://pages-service:4003
+      - PARSER_SERVICE_URL=http://parser-service:4004
+      - THEME_SERVICE_URL=http://theme-service:4005
+      - EXPORT_SERVICE_URL=http://export-service:4006
+      - VIEWER_SERVICE_URL=http://viewer-service:4007
+      - MCP_SERVICE_URL=http://mcp-service:4008
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - doxify-network
+
+  # Auth Service - Port 4001
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-auth-service
+    restart: unless-stopped
+    command: node services/auth-service/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=4001
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-doxify}:${MONGO_PASSWORD:-doxify123}@mongodb:27017/doxify?authSource=admin
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - doxify-network
+
+  # Projects Service - Port 4002
+  projects-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-projects-service
+    restart: unless-stopped
+    command: node services/projects-service/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=4002
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-doxify}:${MONGO_PASSWORD:-doxify123}@mongodb:27017/doxify?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - doxify-network
+
+  # Pages Service - Port 4003
+  pages-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-pages-service
+    restart: unless-stopped
+    command: node services/pages-service/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=4003
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-doxify}:${MONGO_PASSWORD:-doxify123}@mongodb:27017/doxify?authSource=admin
+      - PARSER_SERVICE_URL=http://parser-service:4004
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - doxify-network
+
+  # Parser Service - Port 4004
+  parser-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-parser-service
+    restart: unless-stopped
+    command: node services/parser-service/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=4004
+    networks:
+      - doxify-network
+
+  # Theme Service - Port 4005
+  theme-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-theme-service
+    restart: unless-stopped
+    command: node services/theme-service/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=4005
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-doxify}:${MONGO_PASSWORD:-doxify123}@mongodb:27017/doxify?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - doxify-network
+
+  # Export Service - Port 4006
+  export-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-export-service
+    restart: unless-stopped
+    command: node services/export-service/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=4006
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-doxify}:${MONGO_PASSWORD:-doxify123}@mongodb:27017/doxify?authSource=admin
+    volumes:
+      - export_data:/app/export
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - doxify-network
+
+  # Viewer Service - Port 4007
+  viewer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-viewer-service
+    restart: unless-stopped
+    command: node services/viewer-service/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=4007
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-doxify}:${MONGO_PASSWORD:-doxify123}@mongodb:27017/doxify?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - doxify-network
+
+  # MCP Service - Port 4008
+  mcp-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doxify-mcp-service
+    restart: unless-stopped
+    command: node services/mcp-service/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=4008
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-doxify}:${MONGO_PASSWORD:-doxify123}@mongodb:27017/doxify?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - doxify-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  export_data:
+    driver: local
+
+networks:
+  doxify-network:
+    driver: bridge
