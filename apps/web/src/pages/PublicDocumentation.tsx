@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Home, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import Loading from '../components/ui/Loading';
 
@@ -163,28 +163,28 @@ export default function PublicDocumentation() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#0D0D0D] text-neutral-100">
-      {/* TOP HEADER BAR */}
-      <header className="h-12 border-b border-neutral-900 bg-[#0D0D0D] flex items-center justify-between px-4 shrink-0">
+    <div className="flex flex-col h-screen bg-[#0A0A0A] text-neutral-100">
+      {/* TOP HEADER BAR - Sticky with shadow */}
+      <header className="h-12 border-b border-neutral-800/50 bg-[#0D0D0D]/95 backdrop-blur-sm flex items-center justify-between px-6 shrink-0 sticky top-0 z-50 shadow-lg shadow-black/5">
         <div className="flex items-center gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-emerald-600 flex items-center justify-center text-white font-bold text-xs">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-transform group-hover:scale-110">
               D
             </div>
             <span className="text-neutral-100 font-semibold text-sm">Docs</span>
           </Link>
 
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-2 text-sm text-neutral-400">
-            <ChevronRight className="w-3 h-3" />
-            <Link to={`/sites/${slug}`} className="hover:text-neutral-200 transition-colors">
+          <div className="flex items-center gap-2 text-sm text-neutral-500">
+            <ChevronRight className="w-3.5 h-3.5" />
+            <Link to={`/sites/${slug}`} className="hover:text-neutral-200 transition-colors duration-150">
               {projectData.name}
             </Link>
             {pageData && (
               <>
-                <ChevronRight className="w-3 h-3" />
-                <span className="text-neutral-200">{pageData.title}</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+                <span className="text-neutral-300 font-medium">{pageData.title}</span>
               </>
             )}
           </div>
@@ -193,7 +193,7 @@ export default function PublicDocumentation() {
         <div className="flex items-center gap-2">
           <Link
             to="/"
-            className="px-3 py-1.5 text-sm text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 rounded-md transition-all"
+            className="px-3 py-1.5 text-sm text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 rounded-lg transition-all duration-150 ease-in-out"
           >
             Dashboard
           </Link>
@@ -202,32 +202,32 @@ export default function PublicDocumentation() {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex flex-1 overflow-hidden">
-        {/* LEFT SIDEBAR - Navigation (240px fixed, narrower) */}
-        <aside className="w-[240px] h-full border-r border-neutral-900 bg-[#0D0D0D] flex flex-col">
+        {/* LEFT SIDEBAR - Navigation (260px fixed) */}
+        <aside className="w-[260px] h-full border-r border-neutral-800/50 bg-[#0D0D0D] flex flex-col shadow-lg shadow-black/5">
           {/* Search Bar at Top */}
-          <div className="p-3 border-b border-neutral-900">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
+          <div className="p-4 border-b border-neutral-800/50">
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none transition-colors group-focus-within:text-emerald-500" />
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Search documentation..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-neutral-900 border-0 rounded-md px-3 py-1.5 pl-9 text-sm text-neutral-300 placeholder-neutral-500 focus:ring-1 focus:ring-neutral-700 focus:outline-none transition-all"
+                className="w-full bg-neutral-900/50 border border-neutral-800 rounded-lg px-3 py-2 pl-9 pr-12 text-sm text-neutral-200 placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 focus:outline-none transition-all duration-200"
               />
-              <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 px-1.5 py-0.5 text-xs text-neutral-500 bg-neutral-800 rounded border border-neutral-700">⌘K</kbd>
+              <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 px-1.5 py-0.5 text-[10px] text-neutral-500 bg-neutral-800/80 rounded border border-neutral-700 font-mono">⌘K</kbd>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
+          <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
             {navigationData &&
               Object.entries(navigationData).map(([section, pages]: [string, any]) => (
-                <div key={section} className="mb-4">
-                  <p className="px-3 py-1.5 text-xs text-neutral-500 font-medium uppercase tracking-wider">
+                <div key={section}>
+                  <p className="px-3 py-1 text-[11px] text-neutral-500 font-semibold uppercase tracking-wider">
                     {section}
                   </p>
-                  <div className="space-y-0.5">
+                  <div className="mt-2 space-y-0.5">
                     {pages
                       .filter((page: any) =>
                         searchQuery
@@ -241,12 +241,15 @@ export default function PublicDocumentation() {
                           <Link
                             key={page.slug}
                             to={`/sites/${slug}/${cleanSlug}`}
-                            className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-all ${
+                            className={`group relative flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all duration-150 ease-in-out ${
                               isActive
-                                ? 'bg-neutral-800/50 text-neutral-100 font-medium'
-                                : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/30'
+                                ? 'bg-emerald-500/10 text-emerald-400 font-medium shadow-sm'
+                                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40'
                             }`}
                           >
+                            {isActive && (
+                              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-emerald-500 rounded-r" />
+                            )}
                             <span className="truncate">{page.title}</span>
                           </Link>
                         );
@@ -257,9 +260,9 @@ export default function PublicDocumentation() {
           </nav>
 
           {/* Footer */}
-          <div className="border-t border-neutral-900 px-3 py-2">
+          <div className="border-t border-neutral-800/50 px-4 py-3">
             <p className="text-xs text-neutral-600">
-              Powered by <span className="text-neutral-400 font-medium">Doxify</span>
+              Powered by <span className="text-neutral-400 font-medium hover:text-emerald-400 transition-colors cursor-pointer">Doxify</span>
             </p>
           </div>
         </aside>
@@ -269,46 +272,52 @@ export default function PublicDocumentation() {
           {/* MAIN DOCS PANEL */}
           <main 
             ref={contentRef}
-            className="flex-1 px-16 py-12 bg-[#0D0D0D] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
+            className="flex-1 px-8 md:px-12 lg:px-20 py-16 bg-[#0A0A0A] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
           >
             {isPageLoading ? (
               <div className="flex items-center justify-center h-full">
                 <Loading />
               </div>
             ) : pageData ? (
-              <article className="max-w-3xl mx-auto">
+              <article className="max-w-3xl mx-auto animate-in fade-in duration-300">
                 <div
                   className="prose prose-invert prose-lg max-w-none
-                    prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-neutral-100
-                    prose-h1:text-5xl prose-h1:mb-4 prose-h1:mt-0 prose-h1:leading-tight
-                    prose-h2:text-3xl prose-h2:mt-16 prose-h2:mb-6
-                    prose-h3:text-xl prose-h3:mt-12 prose-h3:mb-4
-                    prose-p:text-neutral-400 prose-p:leading-relaxed prose-p:text-base
-                    prose-a:text-emerald-400 prose-a:no-underline hover:prose-a:underline prose-a:transition-colors
+                    prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-neutral-50
+                    prose-h1:text-5xl prose-h1:mb-6 prose-h1:mt-0 prose-h1:leading-[1.1] prose-h1:font-extrabold
+                    prose-h2:text-3xl prose-h2:mt-16 prose-h2:mb-6 prose-h2:pb-3 prose-h2:border-b prose-h2:border-neutral-800/30
+                    prose-h3:text-xl prose-h3:mt-12 prose-h3:mb-4 prose-h3:font-semibold
+                    prose-p:text-neutral-400 prose-p:leading-relaxed prose-p:text-[15px] prose-p:mb-6
+                    prose-a:text-emerald-400 prose-a:no-underline prose-a:font-medium hover:prose-a:underline prose-a:transition-colors prose-a:duration-150
                     prose-strong:text-neutral-200 prose-strong:font-semibold
-                    prose-code:text-emerald-400 prose-code:bg-neutral-900/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:before:content-[''] prose-code:after:content-['']
-                    prose-pre:bg-[#0A0A0A] prose-pre:border prose-pre:border-neutral-800 prose-pre:rounded-lg prose-pre:shadow-lg
-                    prose-ul:text-neutral-400
-                    prose-ol:text-neutral-400
-                    prose-li:marker:text-neutral-600
-                    prose-blockquote:border-l-2 prose-blockquote:border-l-neutral-700 prose-blockquote:text-neutral-500 prose-blockquote:pl-4
-                    prose-img:rounded-lg prose-img:shadow-2xl
+                    prose-code:text-emerald-400 prose-code:bg-neutral-900/80 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-[13px] prose-code:before:content-[''] prose-code:after:content-[''] prose-code:border prose-code:border-neutral-800/50
+                    prose-pre:bg-[#0A0A0A] prose-pre:border prose-pre:border-neutral-800/50 prose-pre:rounded-xl prose-pre:shadow-2xl prose-pre:p-4
+                    prose-ul:text-neutral-400 prose-ul:leading-relaxed
+                    prose-ol:text-neutral-400 prose-ol:leading-relaxed
+                    prose-li:marker:text-neutral-600 prose-li:my-1
+                    prose-blockquote:border-l-2 prose-blockquote:border-l-emerald-500/50 prose-blockquote:text-neutral-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:bg-neutral-900/20 prose-blockquote:py-1 prose-blockquote:rounded-r
+                    prose-img:rounded-xl prose-img:shadow-2xl prose-img:border prose-img:border-neutral-800/30
+                    prose-hr:border-neutral-800/30 prose-hr:my-12
+                    prose-table:border-collapse prose-table:w-full
+                    prose-th:bg-neutral-900/50 prose-th:border prose-th:border-neutral-800 prose-th:p-2 prose-th:text-left prose-th:text-neutral-300
+                    prose-td:border prose-td:border-neutral-800 prose-td:p-2 prose-td:text-neutral-400
                   "
                   dangerouslySetInnerHTML={{ __html: pageData.content }}
                 />
               </article>
             ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-neutral-500">No content available</p>
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="text-6xl mb-4">👀</div>
+                <p className="text-neutral-500 text-lg">No content available</p>
+                <p className="text-neutral-600 text-sm mt-2">This page hasn't been written yet</p>
               </div>
             )}
           </main>
 
-          {/* RIGHT PANEL - Table of Contents (220px fixed) */}
+          {/* RIGHT PANEL - Table of Contents (240px fixed, sticky) */}
           {tableOfContents.length > 0 && (
-            <aside className="hidden xl:block w-[220px] border-l border-neutral-900 bg-[#0D0D0D] overflow-y-auto">
-              <div className="px-4 py-6 sticky top-0">
-                <p className="text-neutral-500 text-xs font-semibold mb-3 uppercase tracking-wider">
+            <aside className="hidden xl:block w-[240px] border-l border-neutral-800/50 bg-[#0D0D0D] overflow-y-auto shadow-lg shadow-black/5">
+              <div className="px-5 py-6 sticky top-12">
+                <p className="text-neutral-500 text-[11px] font-semibold mb-4 uppercase tracking-wider">
                   On This Page
                 </p>
                 <nav className="space-y-1">
@@ -320,12 +329,12 @@ export default function PublicDocumentation() {
                         e.preventDefault();
                         document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       }}
-                      className={`block text-xs py-1 transition-colors ${
+                      className={`block text-xs py-1.5 transition-all duration-150 ease-in-out rounded-md ${
                         activeHeading === item.id
-                          ? 'text-neutral-200 font-medium'
-                          : 'text-neutral-500 hover:text-neutral-300'
+                          ? 'text-emerald-400 font-medium bg-emerald-500/5 -ml-2 pl-2 pr-2 border-l-2 border-emerald-500'
+                          : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/30 -ml-2 pl-2 pr-2'
                       } ${
-                        item.level === 1 ? 'pl-0' : item.level === 2 ? 'pl-3' : 'pl-6'
+                        item.level === 1 ? 'pl-2' : item.level === 2 ? 'pl-5' : 'pl-8'
                       }`}
                     >
                       {item.text}
