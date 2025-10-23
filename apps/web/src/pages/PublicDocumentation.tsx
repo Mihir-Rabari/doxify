@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight, Sun, Moon, Settings, Copy, ExternalLink } from 'lucide-react';
 import api from '../services/api';
 import Loading from '../components/ui/Loading';
+import { useTheme } from '@/contexts/ThemeContext';
+import toast from 'react-hot-toast';
 
 interface Project {
   _id: string;
@@ -35,6 +37,7 @@ interface TocItem {
 
 export default function PublicDocumentation() {
   const { slug, pageSlug } = useParams<{ slug: string; pageSlug?: string }>();
+  const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeHeading, setActiveHeading] = useState<string>('');
   const contentRef = useRef<HTMLDivElement>(null);
@@ -190,12 +193,52 @@ export default function PublicDocumentation() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link
-            to="/"
-            className="px-3 py-1.5 text-sm text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 rounded-lg transition-all duration-150 ease-in-out"
+        <div className="flex items-center gap-1">
+          {/* Copy Page Link */}
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast.success('Link copied to clipboard!', {
+                duration: 2000,
+                style: {
+                  background: '#1F2937',
+                  color: '#fff',
+                  border: '1px solid #374151',
+                },
+              });
+            }}
+            className="w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 rounded-lg transition-all duration-150 ease-in-out"
+            title="Copy link"
           >
-            Dashboard
+            <Copy className="w-4 h-4" />
+          </button>
+
+          {/* Open in New Tab */}
+          <Link
+            to="/dashboard"
+            target="_blank"
+            className="w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 rounded-lg transition-all duration-150 ease-in-out"
+            title="Open dashboard"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </Link>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 rounded-lg transition-all duration-150 ease-in-out"
+            title="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+
+          {/* Settings/Project Info */}
+          <Link
+            to={`/project/${projectData._id}/settings`}
+            className="w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 rounded-lg transition-all duration-150 ease-in-out"
+            title="Project settings"
+          >
+            <Settings className="w-4 h-4" />
           </Link>
         </div>
       </header>
