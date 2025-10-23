@@ -72,30 +72,39 @@ export default function CodeBlock({ node, updateAttributes }: any) {
     initDetector();
   }, []);
 
-  // Auto-detect language when code content changes and language is plaintext
+  // Auto-detect language ONLY when user hasn't selected a language (plaintext)
   useEffect(() => {
     const code = node.textContent?.trim();
     
+    // Only auto-detect if:
+    // 1. Language is still plaintext (user hasn't chosen a language)
+    // 2. There's actual code content
+    // 3. Code has at least 20 characters for better accuracy
+    // 4. Detector is initialized
     if (language === 'plaintext' && code && code.length > 20 && detectorRef.current) {
       const timeoutId = setTimeout(async () => {
+        // Double-check language is still plaintext before detecting
+        if (node.attrs.language !== 'plaintext') return;
+        
         try {
           const results = await detectorRef.current!.runModel(code);
           if (results && results.length > 0) {
             const topResult = results[0];
             const detectedLang = LANGUAGE_MAP[topResult.languageId] || topResult.languageId;
             
+            // Only apply if confidence is reasonable and it's not plaintext
             if (topResult.confidence > 0.2 && detectedLang !== 'plaintext') {
               updateAttributes({ language: detectedLang });
             }
           }
         } catch (error) {
-          // Silently fail
+          // Silently fail - user can manually select language
         }
       }, 1500);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [node.textContent, language, updateAttributes]);
+  }, [node.textContent, language, updateAttributes, node.attrs.language]);
 
   // Manual auto-detect language
   const handleAutoDetect = async () => {
