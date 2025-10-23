@@ -16,7 +16,18 @@ export default function DocsTOC({ items, activeHeading }: DocsTOCProps) {
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const element = document.getElementById(id);
+    if (element) {
+      // Scroll to element with offset for sticky header
+      const offset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
   };
 
   return (
@@ -25,23 +36,34 @@ export default function DocsTOC({ items, activeHeading }: DocsTOCProps) {
         <p className="text-neutral-500 text-[11px] font-semibold mb-4 uppercase tracking-wider">
           On This Page
         </p>
-        <nav className="space-y-1">
-          {items.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              onClick={(e) => handleClick(e, item.id)}
-              className={`block text-xs py-1.5 transition-all duration-150 ease-in-out rounded-md ${
-                activeHeading === item.id
-                  ? 'text-emerald-400 font-medium bg-emerald-500/5 -ml-2 pl-2 pr-2 border-l-2 border-emerald-500'
-                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/30 -ml-2 pl-2 pr-2'
-              } ${
-                item.level === 1 ? 'pl-2' : item.level === 2 ? 'pl-5' : 'pl-8'
-              }`}
-            >
-              {item.text}
-            </a>
-          ))}
+        <nav className="space-y-0.5">
+          {items.map((item) => {
+            const isActive = activeHeading === item.id;
+            const paddingLeft = item.level === 1 ? 'pl-3' : item.level === 2 ? 'pl-6' : 'pl-9';
+            
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => handleClick(e, item.id)}
+                className={`
+                  block text-xs py-2 px-3 rounded-md transition-all duration-200 ease-in-out
+                  relative
+                  ${paddingLeft}
+                  ${
+                    isActive
+                      ? 'text-emerald-400 font-medium bg-emerald-500/10'
+                      : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/40'
+                  }
+                `}
+              >
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-emerald-500 rounded-r" />
+                )}
+                <span className="line-clamp-2">{item.text}</span>
+              </a>
+            );
+          })}
         </nav>
       </div>
     </aside>

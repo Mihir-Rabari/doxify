@@ -96,10 +96,19 @@ export default function PublicDocumentation() {
     const headings = tempDiv.querySelectorAll('h1, h2, h3');
     const toc: TocItem[] = [];
     
-    headings.forEach((heading, index) => {
+    headings.forEach((heading) => {
       const level = parseInt(heading.tagName.substring(1));
-      const text = heading.textContent || '';
-      const id = heading.id || `heading-${text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
+      const text = heading.textContent?.trim() || '';
+      
+      if (!text) return; // Skip empty headings
+      
+      // Generate clean ID from text
+      const id = text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '') // Remove special chars
+        .replace(/\s+/g, '-')     // Replace spaces with dashes
+        .replace(/-+/g, '-')      // Replace multiple dashes with single
+        .trim();
       
       toc.push({ id, text, level });
     });
@@ -113,14 +122,25 @@ export default function PublicDocumentation() {
       if (!contentRef.current) return;
       
       const headings = contentRef.current.querySelectorAll('h1, h2, h3');
+      
+      // Find the heading closest to the top of the viewport
       let currentHeading = '';
+      let closestDistance = Infinity;
       
       headings.forEach((heading) => {
         const rect = heading.getBoundingClientRect();
-        if (rect.top <= 100) {
+        const distance = Math.abs(rect.top - 100); // 100px offset from top
+        
+        if (rect.top <= 150 && distance < closestDistance) {
+          closestDistance = distance;
           currentHeading = heading.id;
         }
       });
+      
+      // If no heading is above the threshold, use the first one
+      if (!currentHeading && headings.length > 0) {
+        currentHeading = (headings[0] as HTMLElement).id;
+      }
       
       setActiveHeading(currentHeading);
     };
@@ -128,21 +148,37 @@ export default function PublicDocumentation() {
     const content = contentRef.current;
     if (content) {
       content.addEventListener('scroll', handleScroll);
+      handleScroll(); // Call once on mount
       return () => content.removeEventListener('scroll', handleScroll);
     }
   }, [pageData]);
 
-  // Add IDs to headings in content
+  // Add IDs to headings in content (must match TOC IDs)
   useEffect(() => {
     if (!contentRef.current || !pageData?.content) return;
     
     const headings = contentRef.current.querySelectorAll('h1, h2, h3');
     headings.forEach((heading) => {
-      if (!heading.id) {
-        const text = heading.textContent || '';
-        heading.id = `heading-${text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
+      const text = heading.textContent?.trim() || '';
+      
+      if (text && !heading.id) {
+        // Use same ID generation as TOC
+        const id = text
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .trim();
+        
+        heading.id = id;
       }
     });
+    
+    // Trigger initial scroll spy after IDs are set
+    setTimeout(() => {
+      const event = new Event('scroll');
+      contentRef.current?.dispatchEvent(event);
+    }, 100);
   }, [pageData]);
 
   if (isProjectLoading) {
