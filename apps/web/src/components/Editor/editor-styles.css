@@ -113,6 +113,15 @@
   line-height: 1.6;
 }
 
+/* Remove trailing newline from code blocks */
+.ProseMirror pre code br:last-child {
+  display: none;
+}
+
+.ProseMirror pre code::after {
+  content: none;
+}
+
 /* Remove line backgrounds from lowlight */
 .ProseMirror pre .hljs,
 .ProseMirror pre code .hljs {

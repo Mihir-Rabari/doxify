@@ -32,7 +32,7 @@ export default function CodeBlock({ node, updateAttributes, extension }: any) {
   const language = node.attrs.language || 'plaintext';
 
   const handleCopy = async () => {
-    const code = node.textContent;
+    const code = node.textContent.replace(/\n$/, ''); // Remove trailing newline
     await navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
