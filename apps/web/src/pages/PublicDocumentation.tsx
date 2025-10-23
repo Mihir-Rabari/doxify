@@ -38,6 +38,7 @@ interface TocItem {
 
 export default function PublicDocumentation() {
   const { slug, pageSlug } = useParams<{ slug: string; pageSlug?: string }>();
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeHeading, setActiveHeading] = useState<string>('');
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -207,7 +208,8 @@ export default function PublicDocumentation() {
         projectName={projectData.name}
         projectSlug={slug!}
         projectId={projectData._id}
-        pageTitle={pageData?.title}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
 
       {/* MAIN CONTENT AREA */}
@@ -228,6 +230,9 @@ export default function PublicDocumentation() {
             ref={contentRef}
             content={pageData?.content}
             isLoading={isPageLoading}
+            projectName={projectData.name}
+            projectSlug={slug!}
+            pageTitle={pageData?.title}
           />
 
           {/* TABLE OF CONTENTS */}

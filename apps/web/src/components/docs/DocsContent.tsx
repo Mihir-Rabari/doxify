@@ -1,13 +1,18 @@
 import { forwardRef } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import Loading from '../ui/Loading';
 
 interface DocsContentProps {
   content?: string;
   isLoading: boolean;
+  projectName: string;
+  projectSlug: string;
+  pageTitle?: string;
 }
 
 const DocsContent = forwardRef<HTMLDivElement, DocsContentProps>(
-  ({ content, isLoading }, ref) => {
+  ({ content, isLoading, projectName, projectSlug, pageTitle }, ref) => {
     if (isLoading) {
       return (
         <main className="flex-1 px-8 md:px-12 lg:px-20 py-16 bg-[#0A0A0A] overflow-y-auto flex items-center justify-center">
@@ -31,9 +36,21 @@ const DocsContent = forwardRef<HTMLDivElement, DocsContentProps>(
     return (
       <main
         ref={ref}
-        className="flex-1 px-8 md:px-12 lg:px-20 py-16 bg-[#0A0A0A] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
+        className="flex-1 px-8 md:px-12 lg:px-20 py-12 bg-[#0A0A0A] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
       >
         <article className="max-w-3xl mx-auto animate-in fade-in duration-300">
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-2 text-sm text-neutral-500 mb-8">
+            <Link to={`/sites/${projectSlug}`} className="hover:text-neutral-200 transition-colors duration-150">
+              {projectName}
+            </Link>
+            {pageTitle && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5" />
+                <span className="text-neutral-300 font-medium">{pageTitle}</span>
+              </>
+            )}
+          </div>
           <div
             className="prose prose-invert prose-lg max-w-none
               prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-neutral-50
