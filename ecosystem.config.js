@@ -114,6 +114,27 @@ module.exports = {
       max_memory_restart: '300M',
     },
 
+    // MCP Service (Model Context Protocol)
+    {
+      name: 'mcp-service',
+      cwd: './services/mcp-service',
+      script: './node_modules/ts-node/dist/bin.js',
+      args: '--transpileOnly src/index.ts',
+      interpreter: 'node',
+      env: {
+        PORT: 4008,
+        AUTH_SERVICE_URL: 'http://localhost:4001',
+        PROJECTS_SERVICE_URL: 'http://localhost:4002',
+        PAGES_SERVICE_URL: 'http://localhost:4003',
+        VIEWER_SERVICE_URL: 'http://localhost:4007',
+        EXPORT_SERVICE_URL: 'http://localhost:4006',
+        PUBLIC_URL: 'http://localhost:5173',
+      },
+      watch: false,
+      autorestart: true,
+      max_memory_restart: '300M',
+    },
+
     // API Gateway
     {
       name: 'api-gateway',
@@ -130,6 +151,7 @@ module.exports = {
         THEME_SERVICE_URL: 'http://localhost:4005',
         EXPORT_SERVICE_URL: 'http://localhost:4006',
         VIEWER_SERVICE_URL: 'http://localhost:4007',
+        MCP_SERVICE_URL: 'http://localhost:4008',
       },
       watch: false,
       autorestart: true,
