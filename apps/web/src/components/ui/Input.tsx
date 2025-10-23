@@ -33,7 +33,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               bg-white dark:bg-neutral-900 
               border ${error ? 'border-red-500' : 'border-gray-200 dark:border-neutral-700'}
               rounded-lg 
-              focus:ring-2 ${error ? 'focus:ring-red-500' : 'focus:ring-emerald-500'}
+              focus:outline-none
+              focus:ring-2 ${error ? 'focus:ring-red-500/40' : 'focus:ring-emerald-500/40'}
               focus:border-transparent 
               text-gray-900 dark:text-white 
               placeholder-gray-400 dark:placeholder-neutral-500
