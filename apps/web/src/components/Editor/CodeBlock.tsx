@@ -1,9 +1,7 @@
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Check, Copy, Wand2 } from 'lucide-react';
-import { common, createLowlight } from 'lowlight';
-
-const lowlight = createLowlight(common);
+import { ModelOperations } from '@vscode/vscode-languagedetection';
 
 const LANGUAGES = [
   { value: 'javascript', label: 'JavaScript' },
@@ -30,45 +28,88 @@ const LANGUAGES = [
   { value: 'plaintext', label: 'Plain Text' },
 ];
 
-export default function CodeBlock({ node, updateAttributes, extension }: any) {
+// Language mapping from VSCode detection to lowlight/highlight.js names
+const LANGUAGE_MAP: Record<string, string> = {
+  'js': 'javascript',
+  'ts': 'typescript',
+  'py': 'python',
+  'rb': 'ruby',
+  'sh': 'bash',
+  'cs': 'csharp',
+  'c++': 'cpp',
+  'c': 'cpp',
+  'rs': 'rust',
+  'go': 'go',
+  'php': 'php',
+  'java': 'java',
+  'kt': 'kotlin',
+  'swift': 'swift',
+  'html': 'html',
+  'css': 'css',
+  'scss': 'scss',
+  'json': 'json',
+  'yaml': 'yaml',
+  'yml': 'yaml',
+  'md': 'markdown',
+  'sql': 'sql',
+};
+
+export default function CodeBlock({ node, updateAttributes }: any) {
   const [copied, setCopied] = useState(false);
   const [detecting, setDetecting] = useState(false);
+  const detectorRef = useRef<ModelOperations | null>(null);
   const language = node.attrs.language || 'plaintext';
+
+  // Initialize language detector
+  useEffect(() => {
+    const initDetector = async () => {
+      try {
+        detectorRef.current = new ModelOperations();
+      } catch (error) {
+        console.error('Failed to initialize language detector:', error);
+      }
+    };
+    initDetector();
+  }, []);
 
   // Auto-detect language when code content changes and language is plaintext
   useEffect(() => {
     const code = node.textContent?.trim();
     
-    // Only auto-detect if:
-    // 1. Language is plaintext
-    // 2. There's actual code content
-    // 3. Code has more than 10 characters (to avoid false detections)
-    if (language === 'plaintext' && code && code.length > 10) {
-      const timeoutId = setTimeout(() => {
+    if (language === 'plaintext' && code && code.length > 20 && detectorRef.current) {
+      const timeoutId = setTimeout(async () => {
         try {
-          const result = lowlight.highlightAuto(code);
-          if (result.data && result.data.language && result.data.language !== 'plaintext') {
-            updateAttributes({ language: result.data.language });
+          const results = await detectorRef.current!.runModel(code);
+          if (results && results.length > 0) {
+            const topResult = results[0];
+            const detectedLang = LANGUAGE_MAP[topResult.languageId] || topResult.languageId;
+            
+            if (topResult.confidence > 0.2 && detectedLang !== 'plaintext') {
+              updateAttributes({ language: detectedLang });
+            }
           }
         } catch (error) {
-          // Silently fail - user can manually select language
+          // Silently fail
         }
-      }, 1000); // Wait 1 second after typing stops
+      }, 1500);
 
       return () => clearTimeout(timeoutId);
     }
   }, [node.textContent, language, updateAttributes]);
 
   // Manual auto-detect language
-  const handleAutoDetect = () => {
+  const handleAutoDetect = async () => {
+    if (!detectorRef.current) return;
+    
     setDetecting(true);
     const code = node.textContent;
     
     try {
-      // Use lowlight's automatic detection
-      const result = lowlight.highlightAuto(code);
-      if (result.data && result.data.language) {
-        updateAttributes({ language: result.data.language });
+      const results = await detectorRef.current.runModel(code);
+      if (results && results.length > 0) {
+        const topResult = results[0];
+        const detectedLang = LANGUAGE_MAP[topResult.languageId] || topResult.languageId;
+        updateAttributes({ language: detectedLang });
       }
     } catch (error) {
       console.error('Language detection failed:', error);
@@ -137,7 +178,7 @@ export default function CodeBlock({ node, updateAttributes, extension }: any) {
       </div>
 
       <pre className="!bg-gray-50 dark:!bg-[#0a0a0a] !rounded-t-none !mt-0 !mb-4">
-        <NodeViewContent as="code" />
+        <NodeViewContent as={"code" as any} />
       </pre>
     </NodeViewWrapper>
   );
