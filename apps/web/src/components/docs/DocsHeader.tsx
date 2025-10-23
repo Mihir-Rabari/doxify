@@ -1,17 +1,14 @@
 import { Link } from 'react-router-dom';
-import { Copy, ExternalLink, Sun, Moon, Settings, Search } from 'lucide-react';
+import { Copy, ExternalLink, Sun, Moon, Search } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 interface DocsHeaderProps {
-  projectName: string;
-  projectSlug: string;
-  projectId: string;
   onSearchClick: () => void;
 }
 
-export default function DocsHeader({ projectName, projectSlug, projectId, onSearchClick }: DocsHeaderProps) {
+export default function DocsHeader({ onSearchClick }: DocsHeaderProps) {
   const { theme, toggleTheme } = useTheme();
 
   // Keyboard shortcut: Cmd/Ctrl + K
@@ -94,15 +91,6 @@ export default function DocsHeader({ projectName, projectSlug, projectId, onSear
         >
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
-
-        {/* Settings */}
-        <Link
-          to={`/project/${projectId}/settings`}
-          className="w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/50 rounded-lg transition-all duration-150 ease-in-out"
-          title="Project settings"
-        >
-          <Settings className="w-4 h-4" />
-        </Link>
       </div>
     </header>
   );

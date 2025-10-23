@@ -4,13 +4,12 @@ import { searchService, SearchResult } from '../../services/searchService';
 
 interface PublicSearchBarProps {
   projectId: string;
-  projectSlug: string;
   onSelectPage: (pageSlug: string) => void;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function PublicSearchBar({ projectId, projectSlug, onSelectPage, isOpen, onClose }: PublicSearchBarProps) {
+export default function PublicSearchBar({ projectId, onSelectPage, isOpen, onClose }: PublicSearchBarProps) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);

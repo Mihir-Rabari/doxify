@@ -1,9 +1,9 @@
 import { mergeAttributes } from '@tiptap/core';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { ReactNodeViewRenderer } from '@tiptap/react';
-import ReadOnlyCodeBlock from './ReadOnlyCodeBlock';
+import PublicCodeBlock from './PublicCodeBlock';
 
-export const ReadOnlyCustomCodeBlock = CodeBlockLowlight.extend({
+export const PublicCodeBlockExtension = CodeBlockLowlight.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -38,6 +38,6 @@ export const ReadOnlyCustomCodeBlock = CodeBlockLowlight.extend({
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(ReadOnlyCodeBlock);
+    return ReactNodeViewRenderer(PublicCodeBlock);
   },
 });

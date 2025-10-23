@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import Loading from '../ui/Loading';
-import ReadOnlyEditor from './ReadOnlyEditor';
+import PublicDocViewer from './PublicDocViewer';
 
 interface DocsContentProps {
   content?: string;
@@ -53,9 +53,9 @@ const DocsContent = forwardRef<HTMLDivElement, DocsContentProps>(
             )}
           </div>
 
-          {/* Content with Read-Only Editor */}
+          {/* Public Documentation Viewer */}
           <div className="px-8 md:px-12 lg:px-20 pb-12">
-            <ReadOnlyEditor content={content} />
+            <PublicDocViewer content={content} />
           </div>
         </div>
       </main>

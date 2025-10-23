@@ -2,6 +2,7 @@ import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 
+// Language display names for public documentation viewer
 const LANGUAGES: Record<string, string> = {
   javascript: 'JavaScript',
   typescript: 'TypeScript',
@@ -27,7 +28,7 @@ const LANGUAGES: Record<string, string> = {
   plaintext: 'Plain Text',
 };
 
-export default function ReadOnlyCodeBlock({ node }: any) {
+export default function PublicCodeBlock({ node }: any) {
   const [copied, setCopied] = useState(false);
   const language = node.attrs.language || 'plaintext';
   const languageLabel = LANGUAGES[language] || language;

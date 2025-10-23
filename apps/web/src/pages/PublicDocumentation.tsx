@@ -206,17 +206,11 @@ export default function PublicDocumentation() {
   return (
     <div className="flex flex-col h-screen bg-[#0A0A0A] text-neutral-100">
       {/* TOP HEADER */}
-      <DocsHeader
-        projectName={projectData.name}
-        projectSlug={slug!}
-        projectId={projectData._id}
-        onSearchClick={() => setSearchOpen(true)}
-      />
+      <DocsHeader onSearchClick={() => setSearchOpen(true)} />
 
       {/* SEARCH MODAL */}
       <PublicSearchBar
         projectId={projectData._id}
-        projectSlug={slug!}
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSelectPage={(pageSlug) => {

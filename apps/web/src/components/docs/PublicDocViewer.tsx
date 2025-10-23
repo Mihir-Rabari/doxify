@@ -6,16 +6,16 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import { common, createLowlight } from 'lowlight';
 import { useEffect } from 'react';
-import { ReadOnlyCustomCodeBlock } from './ReadOnlyCodeBlockExtension';
+import { PublicCodeBlockExtension } from './PublicCodeBlockExtension';
 import '../Editor/editor-styles.css';
 
 const lowlight = createLowlight(common);
 
-interface ReadOnlyEditorProps {
+interface PublicDocViewerProps {
   content: string;
 }
 
-export default function ReadOnlyEditor({ content }: ReadOnlyEditorProps) {
+export default function PublicDocViewer({ content }: PublicDocViewerProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -34,7 +34,7 @@ export default function ReadOnlyEditor({ content }: ReadOnlyEditorProps) {
       TaskItem.configure({
         nested: true,
       }),
-      ReadOnlyCustomCodeBlock.configure({
+      PublicCodeBlockExtension.configure({
         lowlight,
       }),
     ],
@@ -61,7 +61,7 @@ export default function ReadOnlyEditor({ content }: ReadOnlyEditorProps) {
   }
 
   return (
-    <div className="read-only-editor">
+    <div className="public-doc-viewer">
       <EditorContent editor={editor} />
     </div>
   );
