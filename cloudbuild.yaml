@@ -1,0 +1,91 @@
+# Google Cloud Build configuration for automatic deployment
+# Builds and deploys all services to Cloud Run
+
+steps:
+  # Build all service images
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-api-gateway', '-f', 'Dockerfile', '.']
+    id: 'build-api-gateway'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-auth-service', '-f', 'Dockerfile', '.']
+    id: 'build-auth'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-projects-service', '-f', 'Dockerfile', '.']
+    id: 'build-projects'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-pages-service', '-f', 'Dockerfile', '.']
+    id: 'build-pages'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-parser-service', '-f', 'Dockerfile', '.']
+    id: 'build-parser'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-theme-service', '-f', 'Dockerfile', '.']
+    id: 'build-theme'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-export-service', '-f', 'Dockerfile', '.']
+    id: 'build-export'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-viewer-service', '-f', 'Dockerfile', '.']
+    id: 'build-viewer'
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/doxify-mcp-service', '-f', 'Dockerfile', '.']
+    id: 'build-mcp'
+
+  # Push all images to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-api-gateway']
+    waitFor: ['build-api-gateway']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-auth-service']
+    waitFor: ['build-auth']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-projects-service']
+    waitFor: ['build-projects']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-pages-service']
+    waitFor: ['build-pages']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-parser-service']
+    waitFor: ['build-parser']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-theme-service']
+    waitFor: ['build-theme']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-export-service']
+    waitFor: ['build-export']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-viewer-service']
+    waitFor: ['build-viewer']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/doxify-mcp-service']
+    waitFor: ['build-mcp']
+
+# Store images in Google Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/doxify-api-gateway'
+  - 'gcr.io/$PROJECT_ID/doxify-auth-service'
+  - 'gcr.io/$PROJECT_ID/doxify-projects-service'
+  - 'gcr.io/$PROJECT_ID/doxify-pages-service'
+  - 'gcr.io/$PROJECT_ID/doxify-parser-service'
+  - 'gcr.io/$PROJECT_ID/doxify-theme-service'
+  - 'gcr.io/$PROJECT_ID/doxify-export-service'
+  - 'gcr.io/$PROJECT_ID/doxify-viewer-service'
+  - 'gcr.io/$PROJECT_ID/doxify-mcp-service'
+
+timeout: '3600s'

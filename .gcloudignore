@@ -1,0 +1,54 @@
+# Ignore files for Google Cloud deployment
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+.cache/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Development files
+agents/
+.git/
+.gitignore
+
+# Editor directories
+.vscode/
+.idea/
+
+# Documentation
+*.md
+!DEPLOY_GCP.md
+
+# Test files
+__tests__/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+
+# Docker files (not needed for Cloud Run)
+docker-compose.yml
+docker-compose.production.yml
+docker-entrypoint.sh
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# Export directory
+export/

@@ -183,7 +183,34 @@ Coming soon:
 
 ## 🚀 Production Deployment
 
-### Deploy to any VPS (DigitalOcean, AWS, etc.)
+### **Option 1: Google Cloud Run (Recommended - Most Efficient)** ⚡
+
+**Cost:** $0-30/month | **Setup:** 15 minutes | **Auto-scaling:** Yes
+
+```bash
+# Set environment variables
+export GCP_PROJECT_ID=your-project-id
+export MONGODB_URI="your-mongodb-atlas-uri"
+export JWT_SECRET="your-secret-key"
+
+# Deploy everything
+chmod +x deploy-gcp.sh
+./deploy-gcp.sh
+```
+
+**✅ Benefits:**
+- Scales to zero (no cost when idle)
+- Auto-scaling based on traffic
+- No server management
+- Built-in HTTPS
+
+📖 **Full Guide:** [DEPLOY_GCP.md](./DEPLOY_GCP.md)
+
+---
+
+### **Option 2: Docker on VPS (Simple)**
+
+Deploy to any VPS (DigitalOcean, AWS, etc.):
 
 ```bash
 # On your server
@@ -194,7 +221,7 @@ cp .env.example .env
 docker-compose -f docker-compose.production.yml up --build -d
 ```
 
-That's it! Your Doxify instance is live.
+**Cost:** ~$5-20/month for basic VPS
 
 ## 📋 Roadmap
 
