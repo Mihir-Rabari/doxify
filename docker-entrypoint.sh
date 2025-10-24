@@ -2,7 +2,7 @@
 set -e
 
 # Extract service name from command (e.g., "node services/auth-service/index.js" -> "auth-service")
-SERVICE_PATH=$(echo "$@" | grep -oP 'services/\K[^/]+')
+SERVICE_PATH=$(echo "$@" | sed -n 's/.*services\/\([^\/]*\).*/\1/p')
 
 if [ -n "$SERVICE_PATH" ]; then
     SERVICE_DIR="/app/services/$SERVICE_PATH"
