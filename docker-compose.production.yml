@@ -24,7 +24,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-api-gateway
     restart: unless-stopped
-    command: node services/api-gateway/index.js
+    command: node services/api-gateway/dist/index.js
     ports:
       - "${API_GATEWAY_PORT:-4000}:4000"
     environment:
@@ -51,7 +51,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-auth-service
     restart: unless-stopped
-    command: node services/auth-service/index.js
+    command: node services/auth-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4001
@@ -71,7 +71,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-projects-service
     restart: unless-stopped
-    command: node services/projects-service/index.js
+    command: node services/projects-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4002
@@ -89,7 +89,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-pages-service
     restart: unless-stopped
-    command: node services/pages-service/index.js
+    command: node services/pages-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4003
@@ -108,7 +108,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-parser-service
     restart: unless-stopped
-    command: node services/parser-service/index.js
+    command: node services/parser-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4004
@@ -122,7 +122,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-theme-service
     restart: unless-stopped
-    command: node services/theme-service/index.js
+    command: node services/theme-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4005
@@ -140,7 +140,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-export-service
     restart: unless-stopped
-    command: node services/export-service/index.js
+    command: node services/export-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4006
@@ -160,7 +160,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-viewer-service
     restart: unless-stopped
-    command: node services/viewer-service/index.js
+    command: node services/viewer-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4007
@@ -178,7 +178,7 @@ services:
       dockerfile: Dockerfile
     container_name: doxify-mcp-service
     restart: unless-stopped
-    command: node services/mcp-service/index.js
+    command: node services/mcp-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4008
