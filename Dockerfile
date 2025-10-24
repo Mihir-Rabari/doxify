@@ -5,14 +5,14 @@ FROM node:18-alpine AS base
 FROM base AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Build frontend
 FROM base AS frontend-builder
 WORKDIR /app
 COPY apps/web ./apps/web
 WORKDIR /app/apps/web
-RUN npm ci
+RUN npm install
 RUN npm run build
 
 # Production image - Node services
