@@ -17,30 +17,11 @@ services:
       timeout: 5s
       retries: 5
 
-  # Frontend - React App
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: frontend-builder
-    container_name: doxify-frontend
-    restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    environment:
-      - NODE_ENV=production
-      - VITE_API_URL=${API_URL:-http://localhost:4000}
-    networks:
-      - doxify-network
-    depends_on:
-      - api-gateway
-
   # API Gateway - Port 4000
   api-gateway:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-api-gateway
     restart: unless-stopped
     command: node services/api-gateway/index.js
@@ -68,7 +49,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-auth-service
     restart: unless-stopped
     command: node services/auth-service/index.js
@@ -89,7 +69,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-projects-service
     restart: unless-stopped
     command: node services/projects-service/index.js
@@ -108,7 +87,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-pages-service
     restart: unless-stopped
     command: node services/pages-service/index.js
@@ -128,7 +106,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-parser-service
     restart: unless-stopped
     command: node services/parser-service/index.js
@@ -143,7 +120,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-theme-service
     restart: unless-stopped
     command: node services/theme-service/index.js
@@ -162,7 +138,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-export-service
     restart: unless-stopped
     command: node services/export-service/index.js
@@ -183,7 +158,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-viewer-service
     restart: unless-stopped
     command: node services/viewer-service/index.js
@@ -202,7 +176,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
     container_name: doxify-mcp-service
     restart: unless-stopped
     command: node services/mcp-service/index.js
