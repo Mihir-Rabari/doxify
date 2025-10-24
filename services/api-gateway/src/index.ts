@@ -1,44 +1,64 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
-  searchLimiter,
-  pageEditLimiter,
+  generalLimiter,
   authLimiter,
-  readLimiter,
-  writeLimiter,
+  searchLimiter,
   exportLimiter,
   parserLimiter,
-  standardLimiter,
+  projectsLimiter,
+  pagesLimiter,
   themeLimiter
 } from './config/rateLimits';
 
-dotenv.config();
+// Configuration
+interface Config {
+  port: number;
+  host: string;
+  nodeEnv: string;
+  services: {
+    auth: string;
+    projects: string;
+    pages: string;
+    parser: string;
+    theme: string;
+    export: string;
+    viewer: string;
+    mcp: string;
+  };
+}
+
+const config: Config = {
+  port: parseInt(process.env.PORT || '4000', 10),
+  host: process.env.HOST || '0.0.0.0',
+  nodeEnv: process.env.NODE_ENV || 'production',
+  services: {
+    auth: process.env.AUTH_SERVICE_URL || 'http://localhost:4001',
+    projects: process.env.PROJECTS_SERVICE_URL || 'http://localhost:4002',
+    pages: process.env.PAGES_SERVICE_URL || 'http://localhost:4003',
+    parser: process.env.PARSER_SERVICE_URL || 'http://localhost:4004',
+    theme: process.env.THEME_SERVICE_URL || 'http://localhost:4005',
+    export: process.env.EXPORT_SERVICE_URL || 'http://localhost:4006',
+    viewer: process.env.VIEWER_SERVICE_URL || 'http://localhost:4007',
+    mcp: process.env.MCP_SERVICE_URL || 'http://localhost:4008',
+  },
+};
 
 const app = express();
-const PORT = process.env.PORT || 4000;
 
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Service URLs
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:4001';
-const PROJECTS_SERVICE_URL = process.env.PROJECTS_SERVICE_URL || 'http://localhost:4002';
-const PAGES_SERVICE_URL = process.env.PAGES_SERVICE_URL || 'http://localhost:4003';
-const PARSER_SERVICE_URL = process.env.PARSER_SERVICE_URL || 'http://localhost:4004';
-const THEME_SERVICE_URL = process.env.THEME_SERVICE_URL || 'http://localhost:4005';
-const EXPORT_SERVICE_URL = process.env.EXPORT_SERVICE_URL || 'http://localhost:4006';
-const VIEWER_SERVICE_URL = process.env.VIEWER_SERVICE_URL || 'http://localhost:4007';
-
 // Health check
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
+  res.json({ 
+    status: 'ok', 
     service: 'api-gateway',
-    timestamp: new Date().toISOString(),
+    environment: config.nodeEnv,
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -403,16 +423,36 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 API Gateway running on port ${PORT}`);
+// Start server
+const server = app.listen(config.port, config.host, () => {
+  console.log(`🚀 API Gateway running on ${config.host}:${config.port}`);
+  console.log(`🌍 Environment: ${config.nodeEnv}`);
   console.log(`📡 Proxying to microservices:`);
-  console.log(`  - Auth: ${AUTH_SERVICE_URL}`);
-  console.log(`  - Projects: ${PROJECTS_SERVICE_URL}`);
-  console.log(`  - Pages: ${PAGES_SERVICE_URL}`);
-  console.log(`  - Parser: ${PARSER_SERVICE_URL}`);
-  console.log(`  - Theme: ${THEME_SERVICE_URL}`);
-  console.log(`  - Export: ${EXPORT_SERVICE_URL}`);
-  console.log(`  - Viewer: ${VIEWER_SERVICE_URL} (Public Docs)`);
+  console.log(`  - Auth: ${config.services.auth}`);
+  console.log(`  - Projects: ${config.services.projects}`);
+  console.log(`  - Pages: ${config.services.pages}`);
+  console.log(`  - Parser: ${config.services.parser}`);
+  console.log(`  - Theme: ${config.services.theme}`);
+  console.log(`  - Export: ${config.services.export}`);
+  console.log(`  - Viewer: ${config.services.viewer}`);
+  console.log(`  - MCP: ${config.services.mcp}`);
 });
+
+// Graceful shutdown for Cloud Run
+const shutdown = (signal: string) => {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
+  server.close(() => {
+    console.log('✅ API Gateway shut down complete');
+    process.exit(0);
+  });
+  
+  setTimeout(() => {
+    console.error('⚠️  Forced shutdown');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 export default app;

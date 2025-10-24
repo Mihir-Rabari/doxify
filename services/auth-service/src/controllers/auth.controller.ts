@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model';
+import { getUserRepository } from '../models/user.model';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'doxify-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -32,7 +32,8 @@ export const register = async (req: Request, res: Response) => {
 
     // Check if user already exists
     console.log('🔵 [AUTH] Checking if user exists:', email);
-    const existingUser = await User.findOne({ email });
+    const userRepo = getUserRepository();
+    const existingUser = await userRepo.findOne({ email });
     if (existingUser) {
       console.log('❌ [AUTH] User already exists:', email);
       return res.status(409).json({
@@ -48,17 +49,17 @@ export const register = async (req: Request, res: Response) => {
 
     // Create user
     console.log('🔵 [AUTH] Creating user in database...');
-    const user = await User.create({
+    const user = await userRepo.create({
       email,
       password: hashedPassword,
       name,
     });
-    console.log('✅ [AUTH] User created successfully:', user._id);
+    console.log('✅ [AUTH] User created successfully:', user.id);
 
     // Generate token
     console.log('🔵 [AUTH] Generating JWT token...');
     const token = jwt.sign(
-      { userId: String(user._id), email: user.email },
+      { userId: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN } as any
     );
@@ -69,7 +70,7 @@ export const register = async (req: Request, res: Response) => {
       data: {
         token,
         user: {
-          _id: user._id,
+          id: user.id,
           email: user.email,
           name: user.name,
           createdAt: user.createdAt,
@@ -101,7 +102,8 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     // Find user
-    const user = await User.findOne({ email });
+    const userRepo = getUserRepository();
+    const user = await userRepo.findOne({ email });
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -120,7 +122,7 @@ export const login = async (req: Request, res: Response) => {
 
     // Generate token
     const token = jwt.sign(
-      { userId: String(user._id), email: user.email },
+      { userId: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN } as any
     );
@@ -130,7 +132,7 @@ export const login = async (req: Request, res: Response) => {
       data: {
         token,
         user: {
-          _id: user._id,
+          id: user.id,
           email: user.email,
           name: user.name,
           createdAt: user.createdAt,
@@ -152,7 +154,8 @@ export const getMe = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
 
-    const user = await User.findById(userId).select('-password');
+    const userRepo = getUserRepository();
+    const user = await userRepo.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -160,9 +163,11 @@ export const getMe = async (req: Request, res: Response) => {
       });
     }
 
+    // Remove password from response
+    const { password, ...userWithoutPassword } = user;
     res.json({
       success: true,
-      data: user,
+      data: userWithoutPassword,
     });
   } catch (error: any) {
     console.error('Get me error:', error);
