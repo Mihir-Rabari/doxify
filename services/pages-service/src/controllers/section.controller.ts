@@ -1,13 +1,15 @@
 import { Request, Response } from 'express';
-import Section from '../models/section.model';
-import Page from '../models/page.model';
+import { ISection } from '../models/section.model';
+import { IPage } from '../models/page.model';
+import { getPageRepository } from '../repositories/page.repository';
+import { getSectionRepository } from '../repositories/section.repository';
 
 // Get all sections for a project
 export const getSections = async (req: Request, res: Response) => {
   try {
     const { projectId } = req.params;
-
-    const sections = await Section.find({ projectId }).sort({ order: 1 });
+    const sectionRepo = getSectionRepository();
+    const sections = await sectionRepo.findByProjectId(projectId);
 
     res.json({
       success: true,
@@ -29,8 +31,10 @@ export const createSection = async (req: Request, res: Response) => {
     const { projectId } = req.params;
     const { name, order } = req.body;
 
+    const sectionRepo = getSectionRepository();
+    
     // Check if section already exists
-    const existingSection = await Section.findOne({ projectId, name });
+    const existingSection = await sectionRepo.findByProjectIdAndName(projectId, name);
     if (existingSection) {
       return res.status(400).json({
         success: false,
@@ -38,13 +42,11 @@ export const createSection = async (req: Request, res: Response) => {
       });
     }
 
-    const section = new Section({
+    const section = await sectionRepo.create({
       projectId,
       name,
       order: order || 0,
     });
-
-    await section.save();
 
     res.status(201).json({
       success: true,
@@ -66,7 +68,9 @@ export const updateSection = async (req: Request, res: Response) => {
     const { sectionId } = req.params;
     const { name, order } = req.body;
 
-    const section = await Section.findById(sectionId);
+    const sectionRepo = getSectionRepository();
+    const section = await sectionRepo.findById(sectionId);
+    
     if (!section) {
       return res.status(404).json({
         success: false,
@@ -76,20 +80,26 @@ export const updateSection = async (req: Request, res: Response) => {
 
     // If renaming, update all pages in this section
     if (name && name !== section.name) {
-      await Page.updateMany(
-        { projectId: section.projectId, section: section.name },
-        { section: name }
-      );
+      const pageRepo = getPageRepository();
+      const pages = await pageRepo.findByProjectIdAndSection(section.projectId, section.name);
+      
+      // Update each page's section
+      for (const page of pages) {
+        if (page.id) {
+          await pageRepo.update(page.id, { section: name });
+        }
+      }
     }
 
-    if (name) section.name = name;
-    if (order !== undefined) section.order = order;
+    const updates: Partial<ISection> = {};
+    if (name) updates.name = name;
+    if (order !== undefined) updates.order = order;
 
-    await section.save();
+    const updatedSection = await sectionRepo.update(sectionId, updates);
 
     res.json({
       success: true,
-      data: section,
+      data: updatedSection,
     });
   } catch (error: any) {
     console.error('Update section error:', error);
@@ -106,7 +116,9 @@ export const deleteSection = async (req: Request, res: Response) => {
   try {
     const { sectionId } = req.params;
 
-    const section = await Section.findById(sectionId);
+    const sectionRepo = getSectionRepository();
+    const section = await sectionRepo.findById(sectionId);
+    
     if (!section) {
       return res.status(404).json({
         success: false,
@@ -115,12 +127,16 @@ export const deleteSection = async (req: Request, res: Response) => {
     }
 
     // Move all pages in this section to "General"
-    await Page.updateMany(
-      { projectId: section.projectId, section: section.name },
-      { section: 'General' }
-    );
+    const pageRepo = getPageRepository();
+    const pages = await pageRepo.findByProjectIdAndSection(section.projectId, section.name);
+    
+    for (const page of pages) {
+      if (page.id) {
+        await pageRepo.update(page.id, { section: 'General' });
+      }
+    }
 
-    await Section.findByIdAndDelete(sectionId);
+    await sectionRepo.delete(sectionId);
 
     res.json({
       success: true,

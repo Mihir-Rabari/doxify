@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import slugify from 'slugify';
 import axios from 'axios';
-import Page from '../models/page.model';
+import { IPage } from '../models/page.model';
+import { getPageRepository } from '../repositories/page.repository';
 
 const PARSER_SERVICE_URL = process.env.PARSER_SERVICE_URL || 'http://localhost:4004';
 
@@ -19,11 +20,12 @@ export const createPage = async (req: Request, res: Response) => {
     let slug = '/' + slugify(title, { lower: true, strict: true });
     
     // Check if slug exists in project and make it unique
-    let existingPage = await Page.findOne({ projectId, slug });
+    const pageRepo = getPageRepository();
+    let existingPage = await pageRepo.findByProjectIdAndSlug(projectId, slug);
     let counter = 1;
     while (existingPage) {
       slug = `/${slugify(title, { lower: true, strict: true })}-${counter}`;
-      existingPage = await Page.findOne({ projectId, slug });
+      existingPage = await pageRepo.findByProjectIdAndSlug(projectId, slug);
       counter++;
     }
 
@@ -41,7 +43,7 @@ export const createPage = async (req: Request, res: Response) => {
       }
     }
 
-    const page = await Page.create({
+    const page = await pageRepo.create({
       projectId,
       title,
       slug,
@@ -70,21 +72,16 @@ export const getPages = async (req: Request, res: Response) => {
   try {
     const { projectId, page = 1, limit = 50 } = req.query;
 
-    const query: any = {};
-    if (projectId) {
-      query.projectId = projectId;
-    }
+    const pageRepo = getPageRepository();
+    const pages = await pageRepo.findByProjectId(projectId as string);
 
+    const total = pages.length;
     const skip = (Number(page) - 1) * Number(limit);
-    const total = await Page.countDocuments(query);
-    const pages = await Page.find(query)
-      .sort({ section: 1, order: 1, createdAt: 1 })
-      .skip(skip)
-      .limit(Number(limit));
+    const paginatedPages = pages.slice(skip, skip + Number(limit));
 
     res.json({
       success: true,
-      data: pages,
+      data: paginatedPages,
       pagination: {
         total,
         page: Number(page),
@@ -106,7 +103,8 @@ export const getPage = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const page = await Page.findById(id);
+    const pageRepo = getPageRepository();
+    const page = await pageRepo.findById(id);
     if (!page) {
       return res.status(404).json({
         success: false,
@@ -140,7 +138,8 @@ export const updatePage = async (req: Request, res: Response) => {
 
     // If title is being updated, regenerate slug
     if (updates.title) {
-      const page = await Page.findById(id);
+      const pageRepo = getPageRepository();
+      const page = await pageRepo.findById(id);
       if (page) {
         updates.slug = '/' + slugify(updates.title, { lower: true, strict: true });
       }
@@ -159,11 +158,8 @@ export const updatePage = async (req: Request, res: Response) => {
       }
     }
 
-    const page = await Page.findByIdAndUpdate(
-      id,
-      { $set: updates },
-      { new: true, runValidators: true }
-    );
+    const pageRepo = getPageRepository();
+    const page = await pageRepo.update(id, updates);
 
     if (!page) {
       return res.status(404).json({
@@ -190,18 +186,12 @@ export const deletePage = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const page = await Page.findByIdAndDelete(id);
-    if (!page) {
-      return res.status(404).json({
-        success: false,
-        message: 'Page not found',
-      });
-    }
+    const pageRepo = getPageRepository();
+    await pageRepo.delete(id);
 
     res.json({
       success: true,
       message: 'Page deleted successfully',
-      data: page,
     });
   } catch (error: any) {
     console.error('Delete page error:', error);
@@ -217,7 +207,8 @@ export const getPagePreview = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const page = await Page.findById(id);
+    const pageRepo = getPageRepository();
+    const page = await pageRepo.findById(id);
     if (!page) {
       return res.status(404).json({
         success: false,
@@ -242,7 +233,7 @@ export const getPagePreview = async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: {
-        ...page.toObject(),
+        ...page,
         html,
       },
     });

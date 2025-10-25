@@ -7,6 +7,7 @@ import sectionRoutes from './routes/section.routes';
 import searchRoutes from './routes/search.routes';
 import { errorHandler } from './middleware/error.middleware';
 import { initPageRepository } from './repositories/page.repository';
+import { initSectionRepository } from './repositories/section.repository';
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use(errorHandler);
 try {
   const db = new Firestore(config.gcpProjectId ? { projectId: config.gcpProjectId } : {});
   initPageRepository(db);
+  initSectionRepository(db);
   console.log('✅ Connected to Firestore');
   console.log(`📊 GCP Project: ${config.gcpProjectId || 'Using default credentials'}`);
   
