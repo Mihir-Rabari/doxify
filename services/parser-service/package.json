@@ -1,6 +1,7 @@
 {
   "name": "@doxify/parser-service",
   "version": "1.0.0",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",

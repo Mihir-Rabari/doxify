@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import parserRoutes from './routes/parser.routes';
-import { errorHandler } from './middleware/error.middleware';
+import parserRoutes from './routes/parser.routes.js';
+import { errorHandler } from './middleware/error.middleware.js';
 
 dotenv.config();
 

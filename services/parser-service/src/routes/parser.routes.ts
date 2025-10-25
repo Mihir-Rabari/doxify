@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { parseContent, renderContent } from '../controllers/parser.controller';
+import { parseContent, renderContent } from '../controllers/parser.controller.js';
 
 const router = express.Router();
 

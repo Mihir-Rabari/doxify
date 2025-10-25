@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { parse } from '../lib/parser';
-import { render } from '../lib/renderer';
+import { parse } from '../lib/parser.js';
+import { render } from '../lib/renderer.js';
 
 export const parseContent = async (req: Request, res: Response) => {
   try {
