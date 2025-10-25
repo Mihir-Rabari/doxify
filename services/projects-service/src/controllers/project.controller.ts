@@ -32,18 +32,17 @@ export const createProject = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserProjects = async (req: Request, res: Response) => {
+export const getProjects = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
     res.status(200).json({ success: true, projects: [] });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const getProjectById = async (req: Request, res: Response) => {
+export const getProject = async (req: Request, res: Response) => {
   try {
-    const { projectId } = req.params;
+    const { id } = req.params;
     res.status(404).json({ success: false, message: 'Project not found' });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
