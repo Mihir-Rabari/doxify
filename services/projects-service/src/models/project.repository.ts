@@ -13,7 +13,7 @@ export class ProjectRepository {
     return this.db.collection(this.collectionName);
   }
 
-  async create(projectData: Omit<IProject, 'id' | 'createdAt' | 'updatedAt'>): Promise<IProject> {
+  async create(projectData: Omit<IProject, '_id' | 'createdAt' | 'updatedAt'>): Promise<IProject> {
     const now = new Date();
     const docRef = this.collection().doc();
     
@@ -27,13 +27,13 @@ export class ProjectRepository {
     };
     
     await docRef.set(project);
-    return { ...project, id: docRef.id };
+    return { ...project, _id: docRef.id };
   }
 
   async findById(id: string): Promise<IProject | null> {
     const doc = await this.collection().doc(id).get();
     if (!doc.exists) return null;
-    return { ...(doc.data() as IProject), id: doc.id };
+    return { ...(doc.data() as IProject), _id: doc.id };
   }
 
   async findBySlug(slug: string): Promise<IProject | null> {
@@ -44,7 +44,7 @@ export class ProjectRepository {
     
     if (snapshot.empty) return null;
     const doc = snapshot.docs[0];
-    return { ...(doc.data() as IProject), id: doc.id };
+    return { ...(doc.data() as IProject), _id: doc.id };
   }
 
   async findByUserId(userId: string): Promise<IProject[]> {
@@ -53,7 +53,7 @@ export class ProjectRepository {
       .orderBy('createdAt', 'desc')
       .get();
     
-    return snapshot.docs.map(doc => ({ ...(doc.data() as IProject), id: doc.id }));
+    return snapshot.docs.map(doc => ({ ...(doc.data() as IProject), _id: doc.id }));
   }
 
   async findByUserIdAndSlug(userId: string, slug: string): Promise<IProject | null> {
@@ -65,7 +65,7 @@ export class ProjectRepository {
     
     if (snapshot.empty) return null;
     const doc = snapshot.docs[0];
-    return { ...(doc.data() as IProject), id: doc.id };
+    return { ...(doc.data() as IProject), _id: doc.id };
   }
 
   async update(id: string, updates: Partial<IProject>): Promise<IProject | null> {
@@ -90,7 +90,7 @@ export class ProjectRepository {
       .orderBy('publishSettings.publishedAt', 'desc')
       .get();
     
-    return snapshot.docs.map(doc => ({ ...(doc.data() as IProject), id: doc.id }));
+    return snapshot.docs.map(doc => ({ ...(doc.data() as IProject), _id: doc.id }));
   }
 }
 
