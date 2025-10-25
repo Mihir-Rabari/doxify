@@ -4,28 +4,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import archiver from 'archiver';
 import { generateStaticSite } from '../lib/generator';
-import mongoose from 'mongoose';
+import { Firestore } from '@google-cloud/firestore';
 
-// Import models
-const ProjectSchema = new mongoose.Schema({
-  name: String,
-  slug: String,
-  description: String,
-  userId: String,
-  theme: Object,
-}, { timestamps: true });
-
-const PageSchema = new mongoose.Schema({
-  projectId: String,
-  title: String,
-  slug: String,
-  content: String,
-  blocks: Array,
-  metadata: Object,
-}, { timestamps: true });
-
-const Project = mongoose.model('Project', ProjectSchema);
-const Page = mongoose.model('Page', PageSchema);
+const db = new Firestore();
+const projectsCollection = db.collection('projects');
+const pagesCollection = db.collection('pages');
 
 export const exportProject = async (req: Request, res: Response) => {
   try {
@@ -37,15 +20,22 @@ export const exportProject = async (req: Request, res: Response) => {
     const { projectId } = req.body;
 
     // Fetch project and pages
-    const project = await Project.findById(projectId);
-    if (!project) {
+    const projectDoc = await projectsCollection.doc(projectId).get();
+    if (!projectDoc.exists) {
       return res.status(404).json({
         success: false,
         message: 'Project not found',
       });
     }
 
-    const pages = await Page.find({ projectId }).sort({ 'metadata.sidebarPosition': 1 });
+    const project = { id: projectDoc.id, ...projectDoc.data() };
+
+    const pagesSnapshot = await pagesCollection
+      .where('projectId', '==', projectId)
+      .orderBy('metadata.sidebarPosition', 'asc')
+      .get();
+    
+    const pages = pagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     // Generate static site
     const exportPath = await generateStaticSite(project, pages);
@@ -72,15 +62,16 @@ export const downloadExport = async (req: Request, res: Response) => {
   try {
     const { projectId } = req.params;
 
-    const project = await Project.findById(projectId);
-    if (!project) {
+    const projectDoc = await projectsCollection.doc(projectId).get();
+    if (!projectDoc.exists) {
       return res.status(404).json({
         success: false,
         message: 'Project not found',
       });
     }
 
-    const exportDir = path.join(__dirname, '../../export', (project as any).slug);
+    const project = projectDoc.data();
+    const exportDir = path.join(__dirname, '../../export', project?.slug || projectId);
 
     if (!fs.existsSync(exportDir)) {
       return res.status(404).json({

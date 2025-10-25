@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+// Firestore-compatible TypeScript interfaces for Project model
 
 export interface IPublishSettings {
   isPublished: boolean;
@@ -13,7 +13,8 @@ export interface IPublishSettings {
   };
 }
 
-export interface IProject extends Document {
+export interface IProject {
+  id?: string;
   name: string;
   slug: string;
   description?: string;
@@ -23,28 +24,3 @@ export interface IProject extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
-
-const ProjectSchema: Schema = new Schema(
-  {
-    name: { type: String, required: true },
-    slug: { type: String, required: true, unique: true },
-    description: { type: String },
-    userId: { type: String, required: true },
-    theme: { type: Schema.Types.Mixed },
-    publishSettings: {
-      isPublished: { type: Boolean, default: false },
-      publishedAt: { type: Date },
-      customDomain: { type: String },
-      seoTitle: { type: String },
-      seoDescription: { type: String },
-      favicon: { type: String },
-      analytics: {
-        googleAnalyticsId: { type: String },
-        plausibleDomain: { type: String },
-      },
-    },
-  },
-  { timestamps: true }
-);
-
-export default mongoose.model<IProject>('Project', ProjectSchema);
