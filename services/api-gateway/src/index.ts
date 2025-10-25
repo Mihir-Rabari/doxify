@@ -9,7 +9,8 @@ import {
   themeLimiter,
   standardLimiter,
   readLimiter,
-  writeLimiter
+  writeLimiter,
+  pageEditLimiter
 } from './config/rateLimits';
 
 // Configuration
