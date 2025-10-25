@@ -33,18 +33,15 @@ api.interceptors.response.use(
     console.error('❌ [API] Response error:', error.response?.status, error.config?.url);
     console.error('❌ [API] Error data:', error.response?.data);
     console.error('❌ [API] Error message:', error.message);
-    
-    const message = error.response?.data?.message || 'An error occurred';
 
-    // Handle 401 Unauthorized
+    // Handle 401 Unauthorized - only toast for auth errors
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
       toast.error('Session expired. Please login again.');
-    } else {
-      toast.error(message);
     }
+    // Don't show toast for other errors - let components handle them
 
     return Promise.reject(error);
   }

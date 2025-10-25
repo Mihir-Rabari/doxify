@@ -16,7 +16,7 @@ export const createProject = async (req: Request, res: Response) => {
     const slug = slugify(name, { lower: true, strict: true });
     
     const project: IProject = {
-      id: Date.now().toString(),
+      _id: Date.now().toString(),
       name,
       slug,
       description,
@@ -27,7 +27,7 @@ export const createProject = async (req: Request, res: Response) => {
       updatedAt: new Date(),
     };
 
-    res.status(201).json({ success: true, project });
+    res.status(201).json({ success: true, data: project });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -35,7 +35,19 @@ export const createProject = async (req: Request, res: Response) => {
 
 export const getProjects = async (req: Request, res: Response) => {
   try {
-    res.status(200).json({ success: true, projects: [] });
+    const userId = req.user!.userId; // Get from JWT token
+    
+    // TODO: Fetch from Firestore - stub for now
+    res.status(200).json({ 
+      success: true, 
+      data: [], // Projects array
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0
+      }
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
