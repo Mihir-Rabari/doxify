@@ -1,14 +1,27 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import { Firestore } from '@google-cloud/firestore';
 import viewerRoutes from './routes/viewer.routes';
 
 dotenv.config();
 
+// Configuration
+interface Config {
+  port: number;
+  host: string;
+  gcpProjectId?: string;
+  nodeEnv: string;
+}
+
+const config: Config = {
+  port: parseInt(process.env.PORT || '4007', 10),
+  host: process.env.HOST || '0.0.0.0',
+  gcpProjectId: process.env.GCP_PROJECT_ID,
+  nodeEnv: process.env.NODE_ENV || 'production',
+};
+
 const app = express();
-const PORT = process.env.PORT || 4007;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/doxify';
 
 // Middleware
 app.use(cors());
@@ -39,22 +52,42 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   console.error('Viewer service error:', err);
   res.status(500).json({ 
     error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    message: config.nodeEnv === 'development' ? err.message : 'Something went wrong'
   });
 });
 
-// Database connection
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`🚀 Viewer Service running on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
+// Initialize Firestore
+try {
+  const db = new Firestore(config.gcpProjectId ? { projectId: config.gcpProjectId } : {});
+  console.log('✅ Connected to Firestore');
+  console.log(`📊 GCP Project: ${config.gcpProjectId || 'Using default credentials'}`);
+  
+  // Start server
+  const server = app.listen(config.port, config.host, () => {
+    console.log(`🚀 Viewer Service running on ${config.host}:${config.port}`);
+    console.log(`🌍 Environment: ${config.nodeEnv}`);
   });
+  
+  // Graceful shutdown
+  const shutdown = (signal: string) => {
+    console.log(`\n${signal} received. Shutting down gracefully...`);
+    server.close(() => {
+      console.log('✅ Viewer Service shut down complete');
+      process.exit(0);
+    });
+    
+    setTimeout(() => {
+      console.error('⚠️  Forced shutdown');
+      process.exit(1);
+    }, 10000);
+  };
+  
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  
+} catch (error) {
+  console.error('❌ Firestore initialization error:', error);
+  process.exit(1);
+}
 
 export default app;
