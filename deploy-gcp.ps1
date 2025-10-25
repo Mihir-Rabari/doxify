@@ -55,7 +55,7 @@ $serviceUrls = @{}
 foreach ($service in $services) {
     Write-Host "Deploying $($service.Name) Service..." -ForegroundColor Cyan
     
-    $envVars = "NODE_ENV=production,PORT=$($service.Port)"
+    $envVars = "NODE_ENV=production"
     if ($service.Deps) {
         $envVars += "," + $service.Deps
     }
@@ -82,7 +82,7 @@ gcloud run deploy doxify-pages-service `
     --platform managed `
     --region $REGION `
     --allow-unauthenticated `
-    --set-env-vars "NODE_ENV=production,PORT=4003,GCP_PROJECT_ID=$PROJECT_ID,PARSER_SERVICE_URL=$($serviceUrls.parser)" `
+    --set-env-vars "NODE_ENV=production,GCP_PROJECT_ID=$PROJECT_ID,PARSER_SERVICE_URL=$($serviceUrls.parser)" `
     --command="node" `
     --args="services/pages-service/dist/index.js" `
     --max-instances=10 `
@@ -97,7 +97,7 @@ gcloud run deploy doxify-api-gateway `
     --platform managed `
     --region $REGION `
     --allow-unauthenticated `
-    --set-env-vars "NODE_ENV=production,PORT=4000,AUTH_SERVICE_URL=$($serviceUrls.auth),PROJECTS_SERVICE_URL=$($serviceUrls.projects),PAGES_SERVICE_URL=$($serviceUrls.pages),PARSER_SERVICE_URL=$($serviceUrls.parser),THEME_SERVICE_URL=$($serviceUrls.theme),EXPORT_SERVICE_URL=$($serviceUrls.export),VIEWER_SERVICE_URL=$($serviceUrls.viewer),MCP_SERVICE_URL=$($serviceUrls.mcp)" `
+    --set-env-vars "NODE_ENV=production,AUTH_SERVICE_URL=$($serviceUrls.auth),PROJECTS_SERVICE_URL=$($serviceUrls.projects),PAGES_SERVICE_URL=$($serviceUrls.pages),PARSER_SERVICE_URL=$($serviceUrls.parser),THEME_SERVICE_URL=$($serviceUrls.theme),EXPORT_SERVICE_URL=$($serviceUrls.export),VIEWER_SERVICE_URL=$($serviceUrls.viewer),MCP_SERVICE_URL=$($serviceUrls.mcp)" `
     --command="node" `
     --args="services/api-gateway/dist/index.js" `
     --max-instances=20 `

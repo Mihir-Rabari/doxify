@@ -4,8 +4,7 @@
 node_modules/
 **/node_modules/
 
-# Build outputs
-dist/
+# Build outputs (keep dist/ for compiled services)
 build/
 .cache/
 
@@ -37,7 +36,6 @@ __tests__/
 # Docker files (not needed for Cloud Run)
 docker-compose.yml
 docker-compose.production.yml
-docker-entrypoint.sh
 
 # Logs
 *.log
