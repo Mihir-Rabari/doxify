@@ -7,24 +7,24 @@ import {
   updateProject,
   deleteProject,
 } from '../controllers/project.controller';
+import { authenticate } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
 // Validation middleware
 const createValidation = [
   body('name').notEmpty().withMessage('Project name is required'),
-  body('userId').notEmpty().withMessage('User ID is required'),
 ];
 
 const updateValidation = [
   param('id').isMongoId().withMessage('Invalid project ID'),
 ];
 
-// Routes
-router.post('/', createValidation, createProject);
-router.get('/', getProjects);
-router.get('/:id', getProject);
-router.put('/:id', updateValidation, updateProject);
-router.delete('/:id', deleteProject);
+// Routes (protected with authentication)
+router.post('/', authenticate, createValidation, createProject);
+router.get('/', authenticate, getProjects);
+router.get('/:id', authenticate, getProject);
+router.put('/:id', authenticate, updateValidation, updateProject);
+router.delete('/:id', authenticate, deleteProject);
 
 export default router;

@@ -11,7 +11,8 @@ export const createProject = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { name, description, userId } = req.body;
+    const { name, description } = req.body;
+    const userId = req.user!.userId; // Get from JWT token
     const slug = slugify(name, { lower: true, strict: true });
     
     const project: IProject = {

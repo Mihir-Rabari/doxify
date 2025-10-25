@@ -43,7 +43,7 @@ gcloud builds submit --config cloudbuild.yaml .
 $services = @(
     @{Name="parser"; Port=4004; Deps=""},
     @{Name="auth"; Port=4001; Deps="GCP_PROJECT_ID=$PROJECT_ID,JWT_SECRET=$JWT_SECRET,JWT_EXPIRES_IN=7d"},
-    @{Name="projects"; Port=4002; Deps="GCP_PROJECT_ID=$PROJECT_ID"},
+    @{Name="projects"; Port=4002; Deps="GCP_PROJECT_ID=$PROJECT_ID,JWT_SECRET=$JWT_SECRET"},
     @{Name="theme"; Port=4005; Deps="GCP_PROJECT_ID=$PROJECT_ID"},
     @{Name="export"; Port=4006; Deps="GCP_PROJECT_ID=$PROJECT_ID"},
     @{Name="viewer"; Port=4007; Deps="GCP_PROJECT_ID=$PROJECT_ID"},
