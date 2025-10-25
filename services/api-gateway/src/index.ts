@@ -2,14 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
-  generalLimiter,
   authLimiter,
   searchLimiter,
   exportLimiter,
   parserLimiter,
-  projectsLimiter,
-  pagesLimiter,
-  themeLimiter
+  themeLimiter,
+  standardLimiter,
+  readLimiter,
+  writeLimiter
 } from './config/rateLimits';
 
 // Configuration
@@ -216,10 +216,10 @@ app.use('/api/projects', (req, res, next) => {
 app.use(
   '/api/auth',
   createProxyMiddleware({
-    target: AUTH_SERVICE_URL,
+    target: config.services.auth,
     changeOrigin: true,
     onProxyReq: (proxyReq, req: any, res) => {
-      console.log(`🟢 [GATEWAY] ${req.method} ${req.url} -> ${AUTH_SERVICE_URL}`);
+      console.log(`🟢 [GATEWAY] ${req.method} ${req.url} -> ${config.services.auth}`);
       if (req.body && Object.keys(req.body).length > 0) {
         const bodyData = JSON.stringify(req.body);
         console.log('🟢 [GATEWAY] Request body:', bodyData);
@@ -247,7 +247,7 @@ app.use(
 app.use(
   '/api/projects',
   createProxyMiddleware({
-    target: PROJECTS_SERVICE_URL,
+    target: config.services.projects,
     changeOrigin: true,
     onProxyReq: (proxyReq, req: any, res) => {
       console.log(`[Projects] ${req.method} ${req.url}`);
@@ -291,7 +291,7 @@ app.use('/api/pages', (req, res, next) => {
 app.use(
   '/api/pages',
   createProxyMiddleware({
-    target: PAGES_SERVICE_URL,
+    target: config.services.pages,
     changeOrigin: true,
     onProxyReq: (proxyReq, req: any, res) => {
       console.log(`[Pages] ${req.method} ${req.url}`);
@@ -315,7 +315,7 @@ app.use(
 app.use(
   '/api/parser',
   createProxyMiddleware({
-    target: PARSER_SERVICE_URL,
+    target: config.services.parser,
     changeOrigin: true,
     onProxyReq: (proxyReq, req: any, res) => {
       console.log(`[Parser] ${req.method} ${req.url}`);
@@ -339,7 +339,7 @@ app.use(
 app.use(
   '/api/theme',
   createProxyMiddleware({
-    target: THEME_SERVICE_URL,
+    target: config.services.theme,
     changeOrigin: true,
     onProxyReq: (proxyReq, req: any, res) => {
       console.log(`[Theme] ${req.method} ${req.url}`);
@@ -363,7 +363,7 @@ app.use(
 app.use(
   '/api/export',
   createProxyMiddleware({
-    target: EXPORT_SERVICE_URL,
+    target: config.services.export,
     changeOrigin: true,
     onProxyReq: (proxyReq, req: any, res) => {
       console.log(`[Export] ${req.method} ${req.url}`);
@@ -390,7 +390,7 @@ app.use('/api/view', readLimiter); // High read limit for public docs
 app.use(
   '/api/view',
   createProxyMiddleware({
-    target: VIEWER_SERVICE_URL,
+    target: config.services.viewer,
     changeOrigin: true,
     onProxyReq: (proxyReq, req: any, res) => {
       console.log(`[Viewer] ${req.method} ${req.url}`);
