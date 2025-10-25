@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies (use ci for clean install)
+RUN npm ci --only=production --ignore-scripts || npm install --production --ignore-scripts
 
 # Copy source code
 COPY . .
@@ -17,6 +17,8 @@ ARG VITE_APP_NAME
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_APP_NAME=$VITE_APP_NAME
 
+# Install dev dependencies for build
+RUN npm install
 RUN npm run build
 
 # Production stage with nginx

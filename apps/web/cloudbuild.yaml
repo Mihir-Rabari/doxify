@@ -1,0 +1,16 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'VITE_API_URL=https://doxify-api-gateway-wqgm3vw2ta-el.a.run.app'
+      - '--build-arg'
+      - 'VITE_APP_NAME=Doxify'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/doxify-frontend'
+      - '.'
+
+images:
+  - 'gcr.io/$PROJECT_ID/doxify-frontend'
+
+timeout: '1200s'
