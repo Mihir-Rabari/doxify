@@ -112,8 +112,7 @@ router.post('/batch-execute', async (req, res) => {
     );
 
     res.json({
-      results: results.map((r, i) => ({
-        tool: requests[i].name,
+      results: results.map((r) => ({
         status: r.status,
         ...(r.status === 'fulfilled' ? r.value : { error: r.reason }),
       })),
