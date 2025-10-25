@@ -1,267 +1,115 @@
-# 🚀 Doxify
+# Doxify - Documentation Platform
 
-**Beautiful documentation platform built by an indie developer who makes tools based on his project needs.**
-
-Doxify is a modern documentation platform with a beautiful CMS interface, MDX support, theme customization, and static site generation.
-
-![Version](https://img.shields.io/badge/version-1.0.0-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
-
-## ✨ Features
-
-- **🎨 Beautiful CMS Interface** - Supabase-inspired design with intuitive UI
-- **📝 MDX Support** - Write with enhanced Markdown (MDX + custom blocks)
-- **🔥 Live Preview** - See changes instantly as you type
-- **🎨 Theme Customization** - Full control over colors, fonts, and styling
-- **📦 Static Export** - Generate production-ready Next.js sites
-- **🏗️ Microservices Architecture** - Scalable and maintainable backend
-- **🔒 Secure Authentication** - JWT-based user management
-- **🐳 Docker Ready** - One-command deployment with Docker Compose
-
-## 🏗️ Architecture
-
-Doxify uses a microservices architecture:
-
-```
-┌─────────────────┐
-│   API Gateway   │
-│    :4000        │
-└────────┬────────┘
-         │
-    ┌────┴─────────────────┐
-    │                      │
-┌───▼────┐  ┌────────┐  ┌─────┐
-│  Auth  │  │Projects│  │Pages│
-│  :4001 │  │ :4002  │  │:4003│
-└────────┘  └────────┘  └─────┘
-                │          │
-┌────────┐   ┌──▼──┐   ┌───▼───┐
-│ Parser │   │Theme│   │ Export│
-│ :4004  │   │:4005│   │ :4006 │
-└────────┘   └─────┘   └───────┘
-         │
-   ┌─────▼─────┐
-   │  MongoDB  │
-   │   :27017  │
-   └───────────┘
-```
-
-## 🚀 Quick Start with Docker
+## 🚀 Quick Start
 
 ### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Google Cloud account
+- Firebase project with Firestore
 
-- Docker & Docker Compose
-
-### 1. Clone & Configure
-
+### Environment Setup
 ```bash
-git clone https://github.com/mihir-rabari/doxify.git
-cd doxify
+# Install dependencies
+npm install
+
+# Copy .env.example to .env and configure
 cp .env.example .env
 ```
 
-### 2. Start Everything
-
-```bash
-docker-compose -f docker-compose.production.yml up --build
-```
-
-This starts:
-- **Frontend:** http://localhost:3000
-- **API Gateway:** http://localhost:4000
-- **MongoDB:** Port 27017
-- **All 9 microservices**
-
-### 3. Create Your First Project
-
-1. Visit http://localhost:3000/register
-2. Create an account
-3. Create a new documentation project
-4. Start writing in MDX
-5. Customize your theme
-6. Export as a static site
-
-## 📁 Project Structure
-
-```
-doxify/
-├── services/              # Microservices
-│   ├── api-gateway/      # Main entry point (port 4000)
-│   ├── auth-service/     # User authentication (port 4001)
-│   ├── projects-service/ # Project management (port 4002)
-│   ├── pages-service/    # Page CRUD (port 4003)
-│   ├── parser-service/   # MDX parsing (port 4004)
-│   ├── theme-service/    # Theme customization (port 4005)
-│   └── export-service/   # Static site export (port 4006)
-├── apps/
-│   └── web/              # Frontend (Vite + React + TypeScript)
-├── shared/
-│   └── types/            # Shared TypeScript types
-├── agents/               # AI context documentation
-├── docker-compose.yml    # Docker configuration
-├── backend.md            # Backend API documentation
-└── README.md             # This file
-```
-
-## 🛠️ Tech Stack
-
-### Backend
-- **Runtime:** Node.js 20
-- **Framework:** Express.js
-- **Language:** TypeScript
-- **Database:** MongoDB 7
-- **Parser:** unified, remark, rehype
-- **Authentication:** JWT (jsonwebtoken)
-- **Containerization:** Docker
-
-### Frontend
-- **Framework:** React 18
-- **Build Tool:** Vite
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **State:** Zustand + React Query
-- **Router:** React Router v6
-- **UI Components:** Radix UI
-- **Icons:** Lucide React
-
-## 📖 API Documentation
-
-All services run behind the API Gateway at `http://localhost:4000`:
-
-- **Auth:** `/api/auth/*`
-- **Projects:** `/api/projects/*`
-- **Pages:** `/api/pages/*`
-- **Theme:** `/api/theme/*`
-- **Export:** `/api/export/*`
-
-## 🔧 Environment Configuration
-
-Edit `.env` file for production:
-
-```env
-MONGO_PASSWORD=your_secure_password
-JWT_SECRET=your_super_secret_key
-API_URL=https://yourdomain.com
-```
-
-## 🐳 Docker Commands
-
+### Running Locally
 ```bash
 # Start all services
-docker-compose -f docker-compose.production.yml up -d
+npm run dev
 
-# Stop services
-docker-compose -f docker-compose.production.yml down
-
-# View logs
-docker-compose -f docker-compose.production.yml logs -f
-
-# Rebuild & restart
-docker-compose -f docker-compose.production.yml up --build -d
-
-# Clean reset
-docker-compose -f docker-compose.production.yml down -v
+# Or start individual services
+cd services/auth-service && npm run dev
 ```
 
-## 🎨 Default Theme
+## ☁️ Deployment
 
-Doxify uses a Supabase-inspired color palette:
-
-```css
-Primary: #3ECF8E (green)
-Secondary: #1F1F1F (dark gray)
-Background: #FFFFFF (white)
-Foreground: #1F1F1F (text)
-```
-
-## 🧪 Testing
-
-Coming soon:
-- Unit tests with Vitest
-- Integration tests
-- E2E tests with Playwright
-
-## 🚀 Production Deployment
-
-### **Option 1: Google Cloud Run (Recommended - Most Efficient)** ⚡
-
-**Cost:** $0-30/month | **Setup:** 15 minutes | **Auto-scaling:** Yes
-
+### 1. GCP Project Setup
 ```bash
+# Login to GCP
+gcloud auth login
+
+# Set project
+gcloud config set project YOUR_PROJECT_ID
+
+# Enable required APIs
+gcloud services enable firestore.googleapis.com
+```
+
+### 2. Deploy to Cloud Run
+```powershell
 # Set environment variables
-export GCP_PROJECT_ID=your-project-id
-export MONGODB_URI="your-mongodb-atlas-uri"
-export JWT_SECRET="your-secret-key"
+$env:GCP_PROJECT_ID="your-project-id"
+$env:JWT_SECRET="your-jwt-secret"
 
-# Deploy everything
-chmod +x deploy-gcp.sh
-./deploy-gcp.sh
+# Run deployment script
+.\deploy-gcp.ps1
 ```
 
-**✅ Benefits:**
-- Scales to zero (no cost when idle)
-- Auto-scaling based on traffic
-- No server management
-- Built-in HTTPS
+## 🔧 Configuration
 
-📖 **Full Guide:** [DEPLOY_GCP.md](./DEPLOY_GCP.md)
+### Required Environment Variables
+```env
+# Server
+PORT=4000
+NODE_ENV=production
 
----
+# GCP
+GCP_PROJECT_ID=your-project-id
 
-### **Option 2: Docker on VPS (Simple)**
-
-Deploy to any VPS (DigitalOcean, AWS, etc.):
-
-```bash
-# On your server
-git clone https://github.com/mihir-rabari/doxify.git
-cd doxify
-cp .env.example .env
-# Edit .env with production values
-docker-compose -f docker-compose.production.yml up --build -d
+# Security
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=7d
 ```
 
-**Cost:** ~$5-20/month for basic VPS
+## 📚 Services
 
-## 📋 Roadmap
+| Service | Port | Description |
+|---------|------|-------------|
+| API Gateway | 4000 | Entry point for all requests |
+| Auth | 4001 | Authentication & users |
+| Projects | 4002 | Project management |
+| Pages | 4003 | Page content |
+| Parser | 4004 | Markdown parsing |
+| Theme | 4005 | Theme management |
+| Export | 4006 | PDF/HTML export |
+| Viewer | 4007 | Public docs viewer |
+| MCP | 4008 | Content processing |
 
-### MVP (Current)
-- [x] Backend microservices
-- [x] Frontend CMS interface
-- [x] MDX parsing
-- [x] Theme customization
-- [x] Static site export
+## 🔄 Development
 
-### Future Features
-- [ ] Real-time collaboration (Y.js)
-- [ ] AI content generation
-- [ ] Global search (MeiliSearch)
-- [ ] Version control
-- [ ] MCP Server for AI agents
-- [ ] GitHub sync
-- [ ] Template marketplace
-- [ ] Deploy button (one-click Vercel/Netlify)
+### Scripts
+```json
+{
+  "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+  "build": "npm run build --workspaces",
+  "test": "npm test --workspaces"
+}
+```
 
-## 🤝 Contributing
+## 📦 Project Structure
+```
+.
+├── services/          # Microservices
+├── shared/            # Shared libraries
+├── apps/              # Frontend applications
+├── scripts/           # Utility scripts
+└── deploy-gcp.ps1     # Deployment script
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## 🔒 Security
+- JWT authentication
+- Rate limiting
+- Input validation
+- CORS configuration
 
 ## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👨‍💻 Author
-
-**Mihir Rabari** - Indie Developer
-
-I build tools based on my project needs. If it works for me, I ship it.
+MIT
 
 ---
 
-**Built with ❤️ by an indie developer solving his own problems**
+For detailed development guides, see the [wiki](https://github.com/yourusername/doxify/wiki).

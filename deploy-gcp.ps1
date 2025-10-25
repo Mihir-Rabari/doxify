@@ -4,23 +4,22 @@
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$PROJECT_ID = $env:GCP_PROJECT_ID
-$REGION = if ($env:GCP_REGION) { $env:GCP_REGION } else { "us-central1" }
+$PROJECT_ID = if ($env:GCP_PROJECT_ID) { $env:GCP_PROJECT_ID } else { "doxify-prod" }
+$REGION = if ($env:GCP_REGION) { $env:GCP_REGION } else { "asia-south1" }
 $JWT_SECRET = $env:JWT_SECRET
 
-# Check if required variables are set
+# Validate project ID
 if (-not $PROJECT_ID) {
-    Write-Host "❌ Error: GCP_PROJECT_ID environment variable is not set" -ForegroundColor Red
-    Write-Host "Usage: `$env:GCP_PROJECT_ID='your-project-id'; .\deploy-gcp.ps1"
+    Write-Host "[ERROR] PROJECT_ID could not be determined" -ForegroundColor Red
     exit 1
 }
 
 if (-not $JWT_SECRET) {
-    Write-Host "⚠️  Warning: JWT_SECRET not set. Using default" -ForegroundColor Yellow
+    Write-Host "[WARNING] JWT_SECRET not set. Using default" -ForegroundColor Yellow
     $JWT_SECRET = "change-this-secret-in-production"
 }
 
-Write-Host "🚀 Deploying Doxify to Google Cloud Run + Firestore" -ForegroundColor Cyan
+Write-Host "Deploying Doxify to Google Cloud Run + Firestore" -ForegroundColor Cyan
 Write-Host "Project: $PROJECT_ID"
 Write-Host "Region: $REGION"
 Write-Host "Database: Firestore (Native GCP)"
@@ -30,14 +29,14 @@ Write-Host ""
 gcloud config set project $PROJECT_ID
 
 # Enable required APIs
-Write-Host "📦 Enabling required Google Cloud APIs..." -ForegroundColor Yellow
+Write-Host "Enabling required Google Cloud APIs..." -ForegroundColor Yellow
 gcloud services enable run.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
 gcloud services enable containerregistry.googleapis.com
 gcloud services enable firestore.googleapis.com
 
 # Build all images using Cloud Build
-Write-Host "🔨 Building all service images..." -ForegroundColor Yellow
+Write-Host "Building all service images..." -ForegroundColor Yellow
 gcloud builds submit --config cloudbuild.yaml .
 
 # Deploy services
@@ -54,7 +53,7 @@ $services = @(
 $serviceUrls = @{}
 
 foreach ($service in $services) {
-    Write-Host "🚀 Deploying $($service.Name) Service..." -ForegroundColor Cyan
+    Write-Host "Deploying $($service.Name) Service..." -ForegroundColor Cyan
     
     $envVars = "NODE_ENV=production,PORT=$($service.Port)"
     if ($service.Deps) {
@@ -77,7 +76,7 @@ foreach ($service in $services) {
 }
 
 # Deploy Pages Service (needs parser URL)
-Write-Host "🚀 Deploying Pages Service..." -ForegroundColor Cyan
+Write-Host "Deploying Pages Service..." -ForegroundColor Cyan
 gcloud run deploy doxify-pages-service `
     --image "gcr.io/$PROJECT_ID/doxify-pages-service" `
     --platform managed `
@@ -92,7 +91,7 @@ gcloud run deploy doxify-pages-service `
 $serviceUrls.pages = gcloud run services describe doxify-pages-service --platform managed --region $REGION --format 'value(status.url)'
 
 # Deploy API Gateway (with all service URLs)
-Write-Host "🚀 Deploying API Gateway..." -ForegroundColor Cyan
+Write-Host "Deploying API Gateway..." -ForegroundColor Cyan
 gcloud run deploy doxify-api-gateway `
     --image "gcr.io/$PROJECT_ID/doxify-api-gateway" `
     --platform managed `
@@ -107,17 +106,17 @@ gcloud run deploy doxify-api-gateway `
 $apiUrl = gcloud run services describe doxify-api-gateway --platform managed --region $REGION --format 'value(status.url)'
 
 Write-Host ""
-Write-Host "✅ Deployment Complete!" -ForegroundColor Green
+Write-Host "[SUCCESS] Deployment Complete!" -ForegroundColor Green
 Write-Host ""
-Write-Host "🌐 Service URLs:" -ForegroundColor Cyan
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "Service URLs:" -ForegroundColor Cyan
+Write-Host "==========================================="
 Write-Host "API Gateway:     $apiUrl"
 foreach ($key in $serviceUrls.Keys) {
     Write-Host "${key}:     $($serviceUrls[$key])"
 }
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "==========================================="
 Write-Host ""
-Write-Host "📝 Next Steps:" -ForegroundColor Yellow
+Write-Host "Next Steps:" -ForegroundColor Yellow
 Write-Host "1. Deploy frontend to Cloud Storage + CDN"
 Write-Host "2. Update frontend API URL to: $apiUrl"
 Write-Host "3. Configure Firestore security rules (optional)"
