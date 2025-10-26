@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
@@ -13,14 +14,32 @@ import {
   standardLimiter,
   themeLimiter
 } from './config/rateLimits';
+import { authGuard } from './middleware/auth';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// CORS allowlist from env (comma-separated)
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow non-browser clients
+    if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+};
+
 // Middleware
-app.use(cors());
+app.set('trust proxy', 1);
+app.use(helmet());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -46,7 +65,7 @@ app.get('/', (req, res) => {
   res.json({
     name: 'Doxify API Gateway',
     version: '1.0.0',
-    description: 'Central API gateway for Doxify microservices with dynamic rate limiting',
+    description: 'Central API gateway for Doxify microservices with dynamic rate limiting and auth',
     services: {
       auth: '/api/auth',
       projects: '/api/projects',
@@ -155,6 +174,11 @@ app.get('/api/rate-limits', (req, res) => {
   });
 });
 
+// ===============================
+// Auth guard for protected routes
+// ===============================
+app.use(authGuard);
+
 // ============================================
 // DYNAMIC RATE LIMITING BY SERVICE & OPERATION
 // ============================================
@@ -237,6 +261,9 @@ app.use(
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
+      // pass user headers
+      if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
+      if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
     },
     onError: (err, req, res) => {
       console.error('Projects service error:', err.message);
@@ -281,6 +308,8 @@ app.use(
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
+      if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
+      if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
     },
     onError: (err, req, res) => {
       console.error('Pages service error:', err.message);
@@ -305,6 +334,8 @@ app.use(
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
+      if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
+      if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
     },
     onError: (err, req, res) => {
       console.error('Parser service error:', err.message);
@@ -329,6 +360,8 @@ app.use(
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
+      if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
+      if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
     },
     onError: (err, req, res) => {
       console.error('Theme service error:', err.message);
@@ -353,6 +386,8 @@ app.use(
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
+      if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
+      if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
     },
     onError: (err, req, res) => {
       console.error('Export service error:', err.message);
