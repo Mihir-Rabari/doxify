@@ -4,11 +4,25 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model';
 import ms from 'ms';
+import { Response } from 'express';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'doxify-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 const REFRESH_JWT_SECRET = process.env.REFRESH_JWT_SECRET || JWT_SECRET;
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
+const REFRESH_TOKEN_COOKIE = (process.env.REFRESH_TOKEN_COOKIE || 'true') === 'true';
+const REFRESH_COOKIE_NAME = process.env.REFRESH_TOKEN_COOKIE_NAME || 'rt';
+
+function setRefreshCookie(res: Response, token: string) {
+  const isProd = (process.env.NODE_ENV || 'development') === 'production';
+  res.cookie(REFRESH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'lax' : 'lax',
+    maxAge: ms(REFRESH_TOKEN_EXPIRES_IN) as number,
+    path: '/',
+  });
+}
 
 export const register = async (req: Request, res: Response) => {
   console.log('🔵 [AUTH] Register request received');
@@ -76,11 +90,15 @@ export const register = async (req: Request, res: Response) => {
     );
     console.log('✅ [AUTH] JWT tokens generated successfully');
 
+    if (REFRESH_TOKEN_COOKIE) {
+      setRefreshCookie(res, refreshToken);
+    }
+
     const response = {
       success: true,
       data: {
         token,
-        refreshToken,
+        refreshToken: REFRESH_TOKEN_COOKIE ? undefined : refreshToken,
         user: {
           _id: user._id,
           email: user.email,
@@ -147,11 +165,15 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: REFRESH_TOKEN_EXPIRES_IN } as any
     );
 
+    if (REFRESH_TOKEN_COOKIE) {
+      setRefreshCookie(res, refreshToken);
+    }
+
     res.json({
       success: true,
       data: {
         token,
-        refreshToken,
+        refreshToken: REFRESH_TOKEN_COOKIE ? undefined : refreshToken,
         user: {
           _id: user._id,
           email: user.email,
@@ -173,7 +195,10 @@ export const login = async (req: Request, res: Response) => {
 
 export const refresh = async (req: Request, res: Response) => {
   try {
-    const { refreshToken } = req.body || {};
+    let { refreshToken } = req.body || {};
+    if (!refreshToken && (req as any).cookies && (req as any).cookies[REFRESH_COOKIE_NAME]) {
+      refreshToken = (req as any).cookies[REFRESH_COOKIE_NAME];
+    }
     if (!refreshToken) {
       return res.status(400).json({ success: false, message: 'refreshToken is required' });
     }
@@ -207,7 +232,11 @@ export const refresh = async (req: Request, res: Response) => {
       { expiresIn: REFRESH_TOKEN_EXPIRES_IN } as any
     );
 
-    return res.json({ success: true, data: { token: newAccessToken, refreshToken: newRefreshToken } });
+    if (REFRESH_TOKEN_COOKIE) {
+      setRefreshCookie(res, newRefreshToken);
+    }
+
+    return res.json({ success: true, data: { token: newAccessToken, refreshToken: REFRESH_TOKEN_COOKIE ? undefined : newRefreshToken } });
   } catch (error: any) {
     return res.status(401).json({ success: false, message: 'Invalid or expired refresh token', error: error.message });
   }
@@ -215,7 +244,10 @@ export const refresh = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    const { refreshToken } = req.body || {};
+    let { refreshToken } = req.body || {};
+    if (!refreshToken && (req as any).cookies && (req as any).cookies[REFRESH_COOKIE_NAME]) {
+      refreshToken = (req as any).cookies[REFRESH_COOKIE_NAME];
+    }
     if (refreshToken) {
       try {
         const decoded = jwt.verify(refreshToken, REFRESH_JWT_SECRET) as any;
@@ -228,6 +260,9 @@ export const logout = async (req: Request, res: Response) => {
       } catch (e) {
         // ignore
       }
+    }
+    if (REFRESH_TOKEN_COOKIE) {
+      res.clearCookie(REFRESH_COOKIE_NAME, { path: '/' });
     }
     return res.json({ success: true, message: 'Logged out' });
   } catch (error: any) {

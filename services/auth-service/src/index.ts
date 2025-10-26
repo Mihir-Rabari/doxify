@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes';
 import { errorHandler } from './middleware/error.middleware';
 import { env } from './utils/env';
@@ -25,6 +26,7 @@ const corsOptions: cors.CorsOptions = {
 app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
