@@ -1,11 +1,13 @@
-# 🚀 Doxify
+# 🌟 Doxify — Beautiful docs, production-ready
 
-**Beautiful documentation platform built by an indie developer who makes tools based on his project needs.**
-
-Doxify is a modern documentation platform with a beautiful CMS interface, MDX support, theme customization, and static site generation.
-
-![Version](https://img.shields.io/badge/version-1.0.0-green)
+[![CI](https://github.com/mihir-rabari/doxify/actions/workflows/ci.yml/badge.svg)](../../actions)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+![Made with TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
+![Dockerized](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
+Doxify is a modern documentation platform with a beautiful CMS, MD/MDX parsing, theme customization, and static export — now hardened for production deployment.
+
+---
 
 ## ✨ Features
 
@@ -15,10 +17,11 @@ Doxify is a modern documentation platform with a beautiful CMS interface, MDX su
 - **🎨 Theme Customization** - Full control over colors, fonts, and styling
 - **📦 Static Export** - Generate production-ready Next.js sites
 - **🏗️ Microservices Architecture** - Scalable and maintainable backend
-- **🔒 Secure Authentication** - JWT-based user management
-- **🐳 Docker Ready** - One-command deployment with Docker Compose
+- **🔒 Secure Authentication** - JWT access tokens + refresh rotation (15m/30d)
+- **🛡️ Gateway Protections** - Rate limits, CORS allowlist, Helmet, auth guard
+- **🐳 Docker Ready** - Multi-stage builds and compose orchestration
 
-## 🏗️ Architecture
+## 🏗️ Architecture (High-level)
 
 Doxify uses a microservices architecture:
 
@@ -46,7 +49,7 @@ Doxify uses a microservices architecture:
    └───────────┘
 ```
 
-## 🚀 Quick Start with Docker
+## 🚀 Quick Start (Docker)
 
 ### Prerequisites
 
@@ -63,7 +66,11 @@ cp .env.example .env
 ### 2. Start Everything
 
 ```bash
-docker-compose -f docker-compose.production.yml up --build
+# Build and start all services (frontend, gateway, microservices, MongoDB)
+docker-compose -f docker-compose.production.yml up --build -d
+
+# Tail logs
+docker-compose -f docker-compose.production.yml logs -f
 ```
 
 This starts:
@@ -124,24 +131,36 @@ doxify/
 - **UI Components:** Radix UI
 - **Icons:** Lucide React
 
-## 📖 API Documentation
+## 📖 API Surface (via Gateway)
 
-All services run behind the API Gateway at `http://localhost:4000`:
+Base URL: `http://localhost:4000`
 
-- **Auth:** `/api/auth/*`
-- **Projects:** `/api/projects/*`
-- **Pages:** `/api/pages/*`
-- **Theme:** `/api/theme/*`
-- **Export:** `/api/export/*`
+- Auth: `/api/auth/*`
+- Projects: `/api/projects/*`
+- Pages: `/api/pages/*`
+- Theme: `/api/theme/*`
+- Export: `/api/export/*`
+- Viewer (public): `/api/view/*`
+
+Rate limit doc: `/api/rate-limits`
 
 ## 🔧 Environment Configuration
 
-Edit `.env` file for production:
+Copy `.env.example` to `.env` and adjust as needed. Key variables:
 
 ```env
-MONGO_PASSWORD=your_secure_password
-JWT_SECRET=your_super_secret_key
-API_URL=https://yourdomain.com
+# Gateway
+JWT_SECRET=change-this-secret
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Auth tokens
+JWT_EXPIRES_IN=15m
+REFRESH_JWT_SECRET=change-this-refresh-secret
+REFRESH_TOKEN_EXPIRES_IN=30d
+REFRESH_TOKEN_COOKIE=true
+
+# Frontend
+VITE_API_URL=http://localhost:4000
 ```
 
 ## 🐳 Docker Commands
@@ -174,12 +193,17 @@ Background: #FFFFFF (white)
 Foreground: #1F1F1F (text)
 ```
 
-## 🧪 Testing
+## 🧪 Health & Testing (manual)
 
-Coming soon:
-- Unit tests with Vitest
-- Integration tests
-- E2E tests with Playwright
+```bash
+# Health checks
+curl -s http://localhost:4000/health | jq
+curl -s http://localhost:4000/api/rate-limits | jq
+curl -s http://localhost:4001/health | jq  # auth-service
+```
+
+Planned:
+- Unit tests (Vitest) and E2E (Playwright)
 
 ## 🚀 Production Deployment
 
