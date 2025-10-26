@@ -1,15 +1,13 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRoutes from './routes/auth.routes';
 import { errorHandler } from './middleware/error.middleware';
-
-dotenv.config();
+import { env } from './utils/env';
 
 const app = express();
-const PORT = process.env.PORT || 4001;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/doxify';
+const PORT = env.port;
+const MONGODB_URI = env.mongodbUri;
 
 // Middleware
 app.use(cors());
