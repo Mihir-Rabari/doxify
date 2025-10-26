@@ -52,6 +52,24 @@ const THEME_SERVICE_URL = process.env.THEME_SERVICE_URL || 'http://localhost:400
 const EXPORT_SERVICE_URL = process.env.EXPORT_SERVICE_URL || 'http://localhost:4006';
 const VIEWER_SERVICE_URL = process.env.VIEWER_SERVICE_URL || 'http://localhost:4007';
 
+// Helper to preserve rate limit headers on proxied responses
+const RATE_HEADERS = [
+  'ratelimit-limit',
+  'ratelimit-remaining',
+  'ratelimit-reset',
+  'x-ratelimit-limit',
+  'x-ratelimit-remaining',
+  'x-ratelimit-reset',
+];
+function applyRateHeaders(res: any) {
+  for (const h of RATE_HEADERS) {
+    const current = res.getHeader(h);
+    if (current != null) {
+      res.setHeader(h, current as string);
+    }
+  }
+}
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({
@@ -236,6 +254,7 @@ app.use(
     },
     onProxyRes: (proxyRes, req, res) => {
       console.log(`🟢 [GATEWAY] Response from auth: ${proxyRes.statusCode}`);
+      applyRateHeaders(res);
     },
     onError: (err, req, res) => {
       console.error('❌ [GATEWAY] Auth service error:', err.message);
@@ -264,6 +283,9 @@ app.use(
       // pass user headers
       if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
       if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      applyRateHeaders(res);
     },
     onError: (err, req, res) => {
       console.error('Projects service error:', err.message);
@@ -311,6 +333,9 @@ app.use(
       if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
       if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
     },
+    onProxyRes: (proxyRes, req, res) => {
+      applyRateHeaders(res);
+    },
     onError: (err, req, res) => {
       console.error('Pages service error:', err.message);
       (res as any).status(503).json({
@@ -336,6 +361,9 @@ app.use(
       }
       if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
       if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      applyRateHeaders(res);
     },
     onError: (err, req, res) => {
       console.error('Parser service error:', err.message);
@@ -363,6 +391,9 @@ app.use(
       if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
       if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
     },
+    onProxyRes: (proxyRes, req, res) => {
+      applyRateHeaders(res);
+    },
     onError: (err, req, res) => {
       console.error('Theme service error:', err.message);
       (res as any).status(503).json({
@@ -389,6 +420,9 @@ app.use(
       if (req.headers['x-user-id']) proxyReq.setHeader('x-user-id', req.headers['x-user-id'] as string);
       if (req.headers['x-user-email']) proxyReq.setHeader('x-user-email', req.headers['x-user-email'] as string);
     },
+    onProxyRes: (proxyRes, req, res) => {
+      applyRateHeaders(res);
+    },
     onError: (err, req, res) => {
       console.error('Export service error:', err.message);
       (res as any).status(503).json({
@@ -409,6 +443,9 @@ app.use(
     changeOrigin: true,
     onProxyReq: (proxyReq, req: any, res) => {
       console.log(`[Viewer] ${req.method} ${req.url}`);
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      applyRateHeaders(res);
     },
     onError: (err, req, res) => {
       console.error('Viewer service error:', err.message);
