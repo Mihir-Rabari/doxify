@@ -159,6 +159,9 @@ REFRESH_JWT_SECRET=change-this-refresh-secret
 REFRESH_TOKEN_EXPIRES_IN=30d
 REFRESH_TOKEN_COOKIE=true
 
+# CSRF
+CSRF_ENABLED=true
+
 # Frontend
 VITE_API_URL=http://localhost:4000
 ```
