@@ -12,12 +12,11 @@ RUN npm run build
 FROM base AS frontend-runner
 WORKDIR /app/apps/web
 ENV NODE_ENV=production
-# Use dev deps for vite preview; alternatively use a static server
-COPY --from=frontend-builder /app/apps/web/node_modules ./node_modules
+# Serve static build via a lightweight static server
+RUN npm install -g serve@14
 COPY --from=frontend-builder /app/apps/web/dist ./dist
-COPY --from=frontend-builder /app/apps/web/package*.json ./
 EXPOSE 3000
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
 
 # -------- Services build & runtime --------
 FROM base AS runner

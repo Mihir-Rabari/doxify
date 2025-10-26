@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import hpp from 'hpp';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import themeRoutes from './routes/theme.routes';
@@ -27,6 +28,7 @@ const corsOptions: cors.CorsOptions = {
 app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors(corsOptions));
+app.use(hpp());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
