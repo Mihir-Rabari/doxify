@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import crypto from 'crypto';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
   searchLimiter,
@@ -15,6 +17,7 @@ import {
   themeLimiter
 } from './config/rateLimits';
 import { authGuard } from './middleware/auth';
+import { csrfGuard } from './middleware/csrf';
 
 dotenv.config();
 
@@ -42,6 +45,7 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // Service URLs
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:4001';
@@ -77,6 +81,21 @@ app.get('/health', (req, res) => {
     service: 'api-gateway',
     timestamp: new Date().toISOString(),
   });
+});
+
+// CSRF token issuance (double-submit cookie)
+app.get('/csrf-token', (req, res) => {
+  const CSRF_ENABLED = (process.env.CSRF_ENABLED || 'true') !== 'false';
+  if (!CSRF_ENABLED) return res.json({ success: true, csrf: null, enabled: false });
+  const token = crypto.randomBytes(24).toString('hex');
+  const isProd = (process.env.NODE_ENV || 'development') === 'production';
+  res.cookie('csrfToken', token, {
+    httpOnly: false,
+    secure: isProd,
+    sameSite: isProd ? 'lax' : 'lax',
+    path: '/',
+  });
+  res.json({ success: true, csrf: token, enabled: true });
 });
 
 app.get('/', (req, res) => {
@@ -193,9 +212,10 @@ app.get('/api/rate-limits', (req, res) => {
 });
 
 // ===============================
-// Auth guard for protected routes
+// Auth + CSRF guards
 // ===============================
 app.use(authGuard);
+app.use(csrfGuard);
 
 // ============================================
 // DYNAMIC RATE LIMITING BY SERVICE & OPERATION
