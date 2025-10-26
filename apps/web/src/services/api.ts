@@ -5,6 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 export const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -24,28 +25,65 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
-api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error: AxiosError<{ message?: string }>) => {
-    console.error('❌ [API] Response error:', error.response?.status, error.config?.url);
-    console.error('❌ [API] Error data:', error.response?.data);
-    console.error('❌ [API] Error message:', error.message);
-    
-    const message = error.response?.data?.message || 'An error occurred';
+// Response interceptor for error handling + auto refresh
+let isRefreshing = false;
+let pendingRequests: Array<(token: string | null) => void> = [];
 
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-      toast.error('Session expired. Please login again.');
-    } else {
-      toast.error(message);
+function onRefreshed(token: string | null) {
+  pendingRequests.forEach((cb) => cb(token));
+  pendingRequests = [];
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError<{ message?: string }>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const status = error.response?.status;
+
+    if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          const storedRt = localStorage.getItem('refreshToken');
+          const refreshResp = await api.post('/api/auth/refresh', storedRt ? { refreshToken: storedRt } : {});
+          const newToken: string | undefined = refreshResp.data?.data?.token;
+          const newRt: string | undefined = refreshResp.data?.data?.refreshToken;
+          if (newToken) {
+            localStorage.setItem('token', newToken);
+          }
+          if (newRt) {
+            localStorage.setItem('refreshToken', newRt);
+          }
+          onRefreshed(newToken || null);
+          return api(originalRequest);
+        } catch (e) {
+          onRefreshed(null);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('refreshToken');
+          toast.error('Session expired. Please login again.');
+          window.location.href = '/login';
+          return Promise.reject(e);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      // queue pending requests while refreshing
+      return new Promise((resolve, reject) => {
+        pendingRequests.push((token) => {
+          if (token && originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+          }
+          resolve(api(originalRequest));
+        });
+      });
     }
 
+    const message = error.response?.data?.message || 'An error occurred';
+    toast.error(message);
     return Promise.reject(error);
   }
 );
