@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: frontend-builder
+      target: frontend-runner
     container_name: doxify-frontend
     restart: unless-stopped
     ports:
@@ -42,7 +42,7 @@ services:
       target: runner
     container_name: doxify-api-gateway
     restart: unless-stopped
-    command: node services/api-gateway/index.js
+    command: node services/api-gateway/dist/index.js
     ports:
       - "${API_GATEWAY_PORT:-4000}:4000"
     environment:
@@ -56,6 +56,8 @@ services:
       - EXPORT_SERVICE_URL=http://export-service:4006
       - VIEWER_SERVICE_URL=http://viewer-service:4007
       - MCP_SERVICE_URL=http://mcp-service:4008
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
     depends_on:
       mongodb:
         condition: service_healthy
@@ -70,7 +72,7 @@ services:
       target: runner
     container_name: doxify-auth-service
     restart: unless-stopped
-    command: node services/auth-service/index.js
+    command: node services/auth-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4001
@@ -91,7 +93,7 @@ services:
       target: runner
     container_name: doxify-projects-service
     restart: unless-stopped
-    command: node services/projects-service/index.js
+    command: node services/projects-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4002
@@ -110,7 +112,7 @@ services:
       target: runner
     container_name: doxify-pages-service
     restart: unless-stopped
-    command: node services/pages-service/index.js
+    command: node services/pages-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4003
@@ -130,7 +132,7 @@ services:
       target: runner
     container_name: doxify-parser-service
     restart: unless-stopped
-    command: node services/parser-service/index.js
+    command: node services/parser-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4004
@@ -145,7 +147,7 @@ services:
       target: runner
     container_name: doxify-theme-service
     restart: unless-stopped
-    command: node services/theme-service/index.js
+    command: node services/theme-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4005
@@ -164,7 +166,7 @@ services:
       target: runner
     container_name: doxify-export-service
     restart: unless-stopped
-    command: node services/export-service/index.js
+    command: node services/export-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4006
@@ -185,7 +187,7 @@ services:
       target: runner
     container_name: doxify-viewer-service
     restart: unless-stopped
-    command: node services/viewer-service/index.js
+    command: node services/viewer-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4007
@@ -204,7 +206,7 @@ services:
       target: runner
     container_name: doxify-mcp-service
     restart: unless-stopped
-    command: node services/mcp-service/index.js
+    command: node services/mcp-service/dist/index.js
     environment:
       - NODE_ENV=production
       - PORT=4008
