@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Build shared types
+        run: |
+          npm -w @doxify/types ci
+          npm -w @doxify/types run build
+
+      - name: Build services
+        run: |
+          npm -w @doxify/api-gateway ci && npm -w @doxify/api-gateway run build
+          npm -w @doxify/auth-service ci && npm -w @doxify/auth-service run build
+          npm -w @doxify/projects-service ci && npm -w @doxify/projects-service run build
+          npm -w @doxify/pages-service ci && npm -w @doxify/pages-service run build
+          npm -w @doxify/parser-service ci && npm -w @doxify/parser-service run build
+          npm -w @doxify/theme-service ci && npm -w @doxify/theme-service run build
+          npm -w @doxify/export-service ci && npm -w @doxify/export-service run build
+          npm -w viewer-service ci && npm -w viewer-service run build
+          npm -w @doxify/mcp-service ci && npm -w @doxify/mcp-service run build
+
+      - name: Build frontend
+        run: |
+          npm -w @doxify/web ci
+          npm -w @doxify/web run build
+
+      - name: Lint frontend
+        run: npm -w @doxify/web run lint
