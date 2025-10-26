@@ -11,18 +11,39 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Helpers
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()!.split(';').shift() || null;
+  return null;
+}
+
+// Request interceptor to add auth and CSRF tokens
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    const method = (config.method || 'get').toUpperCase();
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+      let csrf = getCookie('csrfToken');
+      if (!csrf) {
+        try {
+          const resp = await api.get('/csrf-token');
+          csrf = resp.data?.csrf || getCookie('csrfToken');
+        } catch {}
+      }
+      if (csrf && config.headers) {
+        (config.headers as any)['X-CSRF-Token'] = csrf;
+      }
+    }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor for error handling + auto refresh
