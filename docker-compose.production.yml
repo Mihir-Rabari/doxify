@@ -58,6 +58,7 @@ services:
       - MCP_SERVICE_URL=http://mcp-service:4008
       - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      - CSRF_ENABLED=${CSRF_ENABLED:-true}
     depends_on:
       mongodb:
         condition: service_healthy
