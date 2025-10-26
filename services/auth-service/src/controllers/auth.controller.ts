@@ -3,9 +3,12 @@ import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model';
+import ms from 'ms';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'doxify-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
+const REFRESH_JWT_SECRET = process.env.REFRESH_JWT_SECRET || JWT_SECRET;
+const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
 
 export const register = async (req: Request, res: Response) => {
   console.log('🔵 [AUTH] Register request received');
@@ -55,19 +58,29 @@ export const register = async (req: Request, res: Response) => {
     });
     console.log('✅ [AUTH] User created successfully:', user._id);
 
-    // Generate token
-    console.log('🔵 [AUTH] Generating JWT token...');
+    // Generate access + refresh tokens
+    console.log('🔵 [AUTH] Generating JWT tokens...');
     const token = jwt.sign(
       { userId: String(user._id), email: user.email },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN } as any
     );
-    console.log('✅ [AUTH] JWT token generated successfully');
+    const jti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
+    (user as any).refreshTokenId = jti;
+    (user as any).refreshTokenExpiresAt = new Date(Date.now() + ms(REFRESH_TOKEN_EXPIRES_IN));
+    await user.save();
+    const refreshToken = jwt.sign(
+      { userId: String(user._id), jti },
+      REFRESH_JWT_SECRET,
+      { expiresIn: REFRESH_TOKEN_EXPIRES_IN } as any
+    );
+    console.log('✅ [AUTH] JWT tokens generated successfully');
 
     const response = {
       success: true,
       data: {
         token,
+        refreshToken,
         user: {
           _id: user._id,
           email: user.email,
@@ -118,17 +131,27 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Generate token
+    // Generate access + refresh tokens
     const token = jwt.sign(
       { userId: String(user._id), email: user.email },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN } as any
+    );
+    const jti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
+    (user as any).refreshTokenId = jti;
+    (user as any).refreshTokenExpiresAt = new Date(Date.now() + ms(REFRESH_TOKEN_EXPIRES_IN));
+    await user.save();
+    const refreshToken = jwt.sign(
+      { userId: String(user._id), jti },
+      REFRESH_JWT_SECRET,
+      { expiresIn: REFRESH_TOKEN_EXPIRES_IN } as any
     );
 
     res.json({
       success: true,
       data: {
         token,
+        refreshToken,
         user: {
           _id: user._id,
           email: user.email,
@@ -145,6 +168,70 @@ export const login = async (req: Request, res: Response) => {
       message: 'Error logging in',
       error: error.message,
     });
+  }
+};
+
+export const refresh = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body || {};
+    if (!refreshToken) {
+      return res.status(400).json({ success: false, message: 'refreshToken is required' });
+    }
+
+    const decoded = jwt.verify(refreshToken, REFRESH_JWT_SECRET) as any;
+    const userId = decoded.userId as string;
+    const jti = decoded.jti as string;
+
+    const user = await User.findById(userId);
+    if (!user || (user as any).refreshTokenId !== jti) {
+      return res.status(401).json({ success: false, message: 'Invalid refresh token' });
+    }
+    if ((user as any).refreshTokenExpiresAt && (user as any).refreshTokenExpiresAt.getTime() < Date.now()) {
+      return res.status(401).json({ success: false, message: 'Refresh token expired' });
+    }
+
+    // Rotate refresh token
+    const newJti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
+    ;(user as any).refreshTokenId = newJti;
+    ;(user as any).refreshTokenExpiresAt = new Date(Date.now() + ms(REFRESH_TOKEN_EXPIRES_IN));
+    await user.save();
+
+    const newAccessToken = jwt.sign(
+      { userId: String(user._id), email: user.email },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN } as any
+    );
+    const newRefreshToken = jwt.sign(
+      { userId: String(user._id), jti: newJti },
+      REFRESH_JWT_SECRET,
+      { expiresIn: REFRESH_TOKEN_EXPIRES_IN } as any
+    );
+
+    return res.json({ success: true, data: { token: newAccessToken, refreshToken: newRefreshToken } });
+  } catch (error: any) {
+    return res.status(401).json({ success: false, message: 'Invalid or expired refresh token', error: error.message });
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body || {};
+    if (refreshToken) {
+      try {
+        const decoded = jwt.verify(refreshToken, REFRESH_JWT_SECRET) as any;
+        const user = await User.findById(decoded.userId);
+        if (user) {
+          ;(user as any).refreshTokenId = null;
+          ;(user as any).refreshTokenExpiresAt = null;
+          await user.save();
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    return res.json({ success: true, message: 'Logged out' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: 'Logout failed', error: error.message });
   }
 };
 
