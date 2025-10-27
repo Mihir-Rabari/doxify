@@ -1,0 +1,206 @@
+# Render Blueprint for Doxify backend (API Gateway + microservices)
+# Docs: https://render.com/docs/blueprint-spec
+
+version: "1"
+
+# Optional shared env var group you can create in the UI and attach here
+#envVarGroups:
+#  - name: doxify-common
+#    envVars: []
+
+services:
+  # API Gateway (public web)
+  - type: web
+    name: doxify-api-gateway
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: |
+      npm -w @doxify/types ci && npm -w @doxify/types run build
+      npm -w @doxify/api-gateway ci && npm -w @doxify/api-gateway run build
+    startCommand: node services/api-gateway/dist/index.js
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      # Internal service URLs; Render private networking resolves .internal hostnames
+      - key: AUTH_SERVICE_URL
+        value: http://auth-service.internal:4001
+      - key: PROJECTS_SERVICE_URL
+        value: http://projects-service.internal:4002
+      - key: PAGES_SERVICE_URL
+        value: http://pages-service.internal:4003
+      - key: PARSER_SERVICE_URL
+        value: http://parser-service.internal:4004
+      - key: THEME_SERVICE_URL
+        value: http://theme-service.internal:4005
+      - key: EXPORT_SERVICE_URL
+        value: http://export-service.internal:4006
+      - key: VIEWER_SERVICE_URL
+        value: http://viewer-service.internal:4007
+      - key: MCP_SERVICE_URL
+        value: http://mcp-service.internal:4008
+      - key: JWT_SECRET
+        value: "REPLACE_ME"
+      - key: ALLOWED_ORIGINS
+        value: https://your-web-app.vercel.app
+      - key: CSRF_ENABLED
+        value: "true"
+
+  # Auth Service (private)
+  - type: private_service
+    name: auth-service
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm -w @doxify/auth-service ci && npm -w @doxify/auth-service run build
+    startCommand: node services/auth-service/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4001
+      - key: MONGODB_URI
+        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        value: "REPLACE_ME"
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: REFRESH_JWT_SECRET
+        value: "REPLACE_ME"
+      - key: REFRESH_TOKEN_EXPIRES_IN
+        value: 30d
+
+  - type: private_service
+    name: projects-service
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm -w @doxify/projects-service ci && npm -w @doxify/projects-service run build
+    startCommand: node services/projects-service/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4002
+      - key: MONGODB_URI
+        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+
+  - type: private_service
+    name: pages-service
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm -w @doxify/pages-service ci && npm -w @doxify/pages-service run build
+    startCommand: node services/pages-service/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4003
+      - key: MONGODB_URI
+        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      - key: PARSER_SERVICE_URL
+        value: http://parser-service.internal:4004
+
+  - type: private_service
+    name: parser-service
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm -w @doxify/parser-service ci && npm -w @doxify/parser-service run build
+    startCommand: node services/parser-service/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4004
+
+  - type: private_service
+    name: theme-service
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm -w @doxify/theme-service ci && npm -w @doxify/theme-service run build
+    startCommand: node services/theme-service/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4005
+      - key: MONGODB_URI
+        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+
+  - type: private_service
+    name: export-service
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm -w @doxify/export-service ci && npm -w @doxify/export-service run build
+    startCommand: node services/export-service/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4006
+      - key: MONGODB_URI
+        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+
+  - type: private_service
+    name: viewer-service
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm -w viewer-service ci && npm -w viewer-service run build
+    startCommand: node services/viewer-service/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4007
+      - key: MONGODB_URI
+        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+
+  - type: private_service
+    name: mcp-service
+    env: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm -w @doxify/mcp-service ci && npm -w @doxify/mcp-service run build
+    startCommand: node services/mcp-service/dist/index.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4008
+      - key: MONGODB_URI
+        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
