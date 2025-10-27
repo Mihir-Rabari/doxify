@@ -24,6 +24,8 @@
     "@types/node": "^20.10.0",
     "@types/cors": "^2.8.17",
     "@types/jsonwebtoken": "^9.0.6",
+    "@types/hpp": "^0.2.6",
+    "@types/cookie-parser": "^1.4.7",
     "typescript": "^5.3.3",
     "nodemon": "^3.0.2",
     "ts-node": "^10.9.2"

@@ -25,6 +25,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/cors": "^2.8.17",
+    "@types/cookie-parser": "^1.4.7",
     "typescript": "^5.3.3",
     "nodemon": "^3.0.2",
     "ts-node": "^10.9.2"
