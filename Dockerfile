@@ -1,22 +1,5 @@
-# Multi-stage build for Doxify services and frontend
+# Multi-stage build for Doxify backend services (no frontend)
 FROM node:18-alpine AS base
-
-# -------- Frontend build --------
-FROM base AS frontend-builder
-WORKDIR /app/apps/web
-COPY apps/web/package*.json ./
-RUN npm ci
-COPY apps/web .
-RUN npm run build
-
-FROM base AS frontend-runner
-WORKDIR /app/apps/web
-ENV NODE_ENV=production
-# Serve static build via a lightweight static server
-RUN npm install -g serve@14
-COPY --from=frontend-builder /app/apps/web/dist ./dist
-EXPOSE 3000
-CMD ["serve", "-s", "dist", "-l", "3000"]
 
 # -------- Services build & runtime --------
 FROM base AS runner
