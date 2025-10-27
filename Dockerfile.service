@@ -1,0 +1,34 @@
+# Dockerfile for individual service deployment
+FROM node:18-alpine AS base
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY services/${SERVICE_NAME}/package*.json ./services/${SERVICE_NAME}/
+COPY shared/types/package*.json ./shared/types/
+
+# Install dependencies
+RUN npm install --omit=dev
+RUN cd services/${SERVICE_NAME} && npm install --omit=dev
+RUN cd shared/types && npm install --omit=dev
+
+# Copy source code
+COPY shared/ ./shared/
+COPY services/${SERVICE_NAME}/ ./services/${SERVICE_NAME}/
+
+# Build shared types
+WORKDIR /app/shared/types
+RUN npm run build
+
+# Build the service
+WORKDIR /app/services/${SERVICE_NAME}
+RUN npm run build
+
+WORKDIR /app
+
+# Expose port
+EXPOSE ${PORT}
+
+# Start the service
+CMD node services/${SERVICE_NAME}/dist/index.js
