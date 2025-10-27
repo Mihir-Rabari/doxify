@@ -68,8 +68,7 @@ services:
         value: production
       - key: PORT
         value: 4001
-      - key: MONGODB_URI
-        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      # Add MONGODB_URI in Render dashboard
       - key: JWT_SECRET
         value: "REPLACE_ME"
       - key: JWT_EXPIRES_IN
@@ -94,8 +93,7 @@ services:
         value: production
       - key: PORT
         value: 4002
-      - key: MONGODB_URI
-        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      # Add MONGODB_URI in Render dashboard
 
   - type: private_service
     name: pages-service
@@ -112,8 +110,7 @@ services:
         value: production
       - key: PORT
         value: 4003
-      - key: MONGODB_URI
-        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      # Add MONGODB_URI in Render dashboard
       - key: PARSER_SERVICE_URL
         value: http://parser-service.internal:4004
 
@@ -148,8 +145,7 @@ services:
         value: production
       - key: PORT
         value: 4005
-      - key: MONGODB_URI
-        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      # Add MONGODB_URI in Render dashboard
 
   - type: private_service
     name: export-service
@@ -166,8 +162,7 @@ services:
         value: production
       - key: PORT
         value: 4006
-      - key: MONGODB_URI
-        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      # Add MONGODB_URI in Render dashboard
 
   - type: private_service
     name: viewer-service
@@ -184,8 +179,7 @@ services:
         value: production
       - key: PORT
         value: 4007
-      - key: MONGODB_URI
-        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      # Add MONGODB_URI in Render dashboard
 
   - type: private_service
     name: mcp-service
@@ -202,5 +196,4 @@ services:
         value: production
       - key: PORT
         value: 4008
-      - key: MONGODB_URI
-        value: mongodb+srv://REPLACE:REPLACE@cluster0.mongodb.net/doxify?retryWrites=true&w=majority
+      # Add MONGODB_URI in Render dashboard
