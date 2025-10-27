@@ -1,0 +1,14 @@
+# Render configuration for Doxify frontend
+services:
+  - type: web
+    name: doxify-frontend
+    env: static
+    region: oregon
+    branch: main
+    buildCommand: cd apps/web && npm install && npm run build
+    staticPublishPath: apps/web/dist
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: VITE_API_URL
+        value: https://your-api-gateway.onrender.com
