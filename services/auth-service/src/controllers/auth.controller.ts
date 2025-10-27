@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model';
 import ms from 'ms';
-import { Response } from 'express';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'doxify-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
@@ -19,7 +18,7 @@ function setRefreshCookie(res: Response, token: string) {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? 'lax' : 'lax',
-    maxAge: ms(REFRESH_TOKEN_EXPIRES_IN) as number,
+    maxAge: ms(REFRESH_TOKEN_EXPIRES_IN),
     path: '/',
   });
 }
@@ -81,7 +80,7 @@ export const register = async (req: Request, res: Response) => {
     );
     const jti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
     (user as any).refreshTokenId = jti;
-    (user as any).refreshTokenExpiresAt = new Date(Date.now() + ms(REFRESH_TOKEN_EXPIRES_IN));
+    (user as any).refreshTokenExpiresAt = new Date(Date.now() + (ms(REFRESH_TOKEN_EXPIRES_IN) || 0));
     await user.save();
     const refreshToken = jwt.sign(
       { userId: String(user._id), jti },
@@ -157,7 +156,7 @@ export const login = async (req: Request, res: Response) => {
     );
     const jti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
     (user as any).refreshTokenId = jti;
-    (user as any).refreshTokenExpiresAt = new Date(Date.now() + ms(REFRESH_TOKEN_EXPIRES_IN));
+    (user as any).refreshTokenExpiresAt = new Date(Date.now() + (ms(REFRESH_TOKEN_EXPIRES_IN) || 0));
     await user.save();
     const refreshToken = jwt.sign(
       { userId: String(user._id), jti },
@@ -218,7 +217,7 @@ export const refresh = async (req: Request, res: Response) => {
     // Rotate refresh token
     const newJti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
     ;(user as any).refreshTokenId = newJti;
-    ;(user as any).refreshTokenExpiresAt = new Date(Date.now() + ms(REFRESH_TOKEN_EXPIRES_IN));
+    ;(user as any).refreshTokenExpiresAt = new Date(Date.now() + (ms(REFRESH_TOKEN_EXPIRES_IN) || 0));
     await user.save();
 
     const newAccessToken = jwt.sign(
