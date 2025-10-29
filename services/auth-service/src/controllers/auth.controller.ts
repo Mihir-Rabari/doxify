@@ -9,12 +9,25 @@ const JWT_SECRET = process.env.JWT_SECRET || 'doxify-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 const REFRESH_JWT_SECRET = process.env.REFRESH_JWT_SECRET || JWT_SECRET;
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
+
+function resolveDuration(value: string, fallback: number): number {
+  if (!value) {
+    return fallback;
+  }
+
+  const result = ms(value as ms.StringValue);
+  if (typeof result === 'number') {
+    return result;
+  }
+  console.warn(`Invalid duration "${value}" passed to ms(); using fallback ${fallback}ms`);
+  return fallback;
+}
 const REFRESH_TOKEN_COOKIE = (process.env.REFRESH_TOKEN_COOKIE || 'true') === 'true';
 const REFRESH_COOKIE_NAME = process.env.REFRESH_TOKEN_COOKIE_NAME || 'rt';
 
 function setRefreshCookie(res: Response, token: string) {
   const isProd = (process.env.NODE_ENV || 'development') === 'production';
-  const maxAge = ms(REFRESH_TOKEN_EXPIRES_IN) as number;
+  const maxAge = resolveDuration(REFRESH_TOKEN_EXPIRES_IN, 30 * 24 * 60 * 60 * 1000);
   res.cookie(REFRESH_COOKIE_NAME, token, {
     httpOnly: true,
     secure: isProd,
@@ -80,7 +93,7 @@ export const register = async (req: Request, res: Response) => {
       { expiresIn: JWT_EXPIRES_IN } as any
     );
     const jti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
-    const refreshTtl = ms(REFRESH_TOKEN_EXPIRES_IN) as number;
+    const refreshTtl = resolveDuration(REFRESH_TOKEN_EXPIRES_IN, 30 * 24 * 60 * 60 * 1000);
     (user as any).refreshTokenId = jti;
     (user as any).refreshTokenExpiresAt = new Date(Date.now() + refreshTtl);
     await user.save();
@@ -157,7 +170,7 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: JWT_EXPIRES_IN } as any
     );
     const jti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
-    const refreshTtl = ms(REFRESH_TOKEN_EXPIRES_IN) as number;
+    const refreshTtl = resolveDuration(REFRESH_TOKEN_EXPIRES_IN, 30 * 24 * 60 * 60 * 1000);
     (user as any).refreshTokenId = jti;
     (user as any).refreshTokenExpiresAt = new Date(Date.now() + refreshTtl);
     await user.save();
@@ -219,7 +232,7 @@ export const refresh = async (req: Request, res: Response) => {
 
     // Rotate refresh token
     const newJti = new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
-    const refreshTtl = ms(REFRESH_TOKEN_EXPIRES_IN) as number;
+    const refreshTtl = resolveDuration(REFRESH_TOKEN_EXPIRES_IN, 30 * 24 * 60 * 60 * 1000);
     ;(user as any).refreshTokenId = newJti;
     ;(user as any).refreshTokenExpiresAt = new Date(Date.now() + refreshTtl);
     await user.save();
