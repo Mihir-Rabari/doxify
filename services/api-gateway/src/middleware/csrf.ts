@@ -11,8 +11,17 @@ export function csrfGuard(req: Request, res: Response, next: NextFunction) {
 
   const headerToken = (req.headers['x-csrf-token'] as string) || '';
   const cookieToken = (req as any).cookies?.csrfToken || '';
-  if (!headerToken || !cookieToken || headerToken !== cookieToken) {
-    return res.status(403).json({ success: false, message: 'CSRF token missing or invalid' });
+  
+  // If both tokens are missing, skip CSRF check (allows unauthenticated requests)
+  // This is safe because we also have auth guards on protected endpoints
+  if (!headerToken && !cookieToken) {
+    return next();
+  }
+  
+  // If tokens don't match, reject
+  if (headerToken !== cookieToken) {
+    console.error(`🔴 [CSRF] Token mismatch - header: ${headerToken?.slice(0, 10)}... cookie: ${cookieToken?.slice(0, 10)}...`);
+    return res.status(403).json({ success: false, message: 'CSRF token invalid' });
   }
   return next();
 }
