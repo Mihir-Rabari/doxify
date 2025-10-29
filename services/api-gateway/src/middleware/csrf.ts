@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
-const EXEMPT_PATH_PREFIXES = ['/health', '/api/rate-limits', '/api/view', '/csrf-token'];
+const EXEMPT_PATH_PREFIXES = ['/health', '/api/rate-limits', '/api/view', '/csrf-token', '/api/auth/login', '/api/auth/register', '/api/auth/forgot-password'];
 
 export function csrfGuard(req: Request, res: Response, next: NextFunction) {
   const CSRF_ENABLED = (process.env.CSRF_ENABLED || 'true') !== 'false';
