@@ -23,7 +23,7 @@ const corsOptions: cors.CorsOptions = {
     return cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-User-Id', 'X-User-Email', 'X-CSRF-Token', 'Accept'],
+  allowedHeaders: ['content-type', 'authorization', 'x-requested-with', 'x-user-id', 'x-user-email', 'x-csrf-token', 'accept'],
   exposedHeaders: ['X-Total-Count', 'X-Page-Count', 'Content-Disposition'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   maxAge: 86400
