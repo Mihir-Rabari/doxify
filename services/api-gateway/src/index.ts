@@ -25,13 +25,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// CORS allowlist from env (comma-separated)
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
+// CORS allowlist from env (comma-separated) - if empty, allow all
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://doxify.onrender.com').split(',').map((s) => s.trim()).filter(Boolean);
 console.log('🔐 [CORS] Allowed origins:', ALLOWED_ORIGINS);
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // allow non-browser clients
-    if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
+    // Allow if no restrictions or origin is in list
+    if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*')) {
       console.log(`✅ [CORS] Allowing origin: ${origin}`);
       return callback(null, true);
     }

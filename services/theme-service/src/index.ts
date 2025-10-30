@@ -13,13 +13,13 @@ const app = express();
 const PORT = process.env.PORT || 4005;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/doxify';
 
-// CORS allowlist
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
+// CORS allowlist - default to doxify frontend
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://doxify.onrender.com').split(',').map((s) => s.trim()).filter(Boolean);
 console.log('🔐 [CORS] Allowed origins:', ALLOWED_ORIGINS);
 const corsOptions: cors.CorsOptions = {
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
-    if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
+    if (ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*')) {
       console.log(`✅ [CORS] Allowing origin: ${origin}`);
       return cb(null, true);
     }
