@@ -89,19 +89,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// CSRF token issuance (double-submit cookie)
+// CSRF token issuance (double-submit cookie) - disabled in production for JWT auth
 app.get('/csrf-token', (req, res) => {
-  const CSRF_ENABLED = (process.env.CSRF_ENABLED || 'true') !== 'false';
-  if (!CSRF_ENABLED) return res.json({ success: true, csrf: null, enabled: false });
-  const token = crypto.randomBytes(24).toString('hex');
-  const isProd = (process.env.NODE_ENV || 'development') === 'production';
-  res.cookie('csrfToken', token, {
-    httpOnly: false,
-    secure: isProd,
-    sameSite: isProd ? 'lax' : 'lax',
-    path: '/',
-  });
-  res.json({ success: true, csrf: token, enabled: true });
+  // CSRF is disabled since we use JWT authentication which is immune to CSRF
+  res.json({ success: true, csrf: null, enabled: false });
 });
 
 app.get('/', (req, res) => {
