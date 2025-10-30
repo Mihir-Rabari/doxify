@@ -14,10 +14,15 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/doxify
 
 // CORS allowlist
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
+console.log('🔐 [CORS] Allowed origins:', ALLOWED_ORIGINS);
 const corsOptions: cors.CorsOptions = {
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
-    if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
+      console.log(`✅ [CORS] Allowing origin: ${origin}`);
+      return cb(null, true);
+    }
+    console.error(`❌ [CORS] Rejected origin: ${origin}`);
     return cb(new Error('Not allowed by CORS'));
   },
   credentials: true,

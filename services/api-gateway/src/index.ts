@@ -27,12 +27,15 @@ const PORT = process.env.PORT || 4000;
 
 // CORS allowlist from env (comma-separated)
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
+console.log('🔐 [CORS] Allowed origins:', ALLOWED_ORIGINS);
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // allow non-browser clients
     if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
+      console.log(`✅ [CORS] Allowing origin: ${origin}`);
       return callback(null, true);
     }
+    console.error(`❌ [CORS] Rejected origin: ${origin} (allowed: ${ALLOWED_ORIGINS.join(', ')})`);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
