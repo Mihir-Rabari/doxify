@@ -260,14 +260,12 @@ app.use(
   createProxyMiddleware({
     target: AUTH_SERVICE_URL,
     changeOrigin: true,
+    logLevel: 'debug',
     onProxyReq: (proxyReq, req: any, res) => {
       console.log(`🟢 [GATEWAY] ${req.method} ${req.url} -> ${AUTH_SERVICE_URL}`);
       if (req.body && Object.keys(req.body).length > 0) {
         const bodyData = JSON.stringify(req.body);
         console.log('🟢 [GATEWAY] Request body:', bodyData);
-        
-        // Write body to proxy request (don't call end(), let proxy handle it)
-        proxyReq.setHeader('Content-Type', 'application/json');
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
@@ -278,7 +276,6 @@ app.use(
     },
     onError: (err, req, res) => {
       console.error('❌ [GATEWAY] Auth service error:', err.message);
-      console.error('❌ [GATEWAY] Error details:', err);
       (res as any).status(503).json({
         success: false,
         message: 'Auth service unavailable',
@@ -296,7 +293,6 @@ app.use(
       console.log(`[Projects] ${req.method} ${req.url}`);
       if (req.body && Object.keys(req.body).length > 0) {
         const bodyData = JSON.stringify(req.body);
-        proxyReq.setHeader('Content-Type', 'application/json');
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
