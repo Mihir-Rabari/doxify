@@ -5,6 +5,7 @@ import Project from '../models/project.model';
 
 export const createProject = async (req: Request, res: Response) => {
   console.log('🟣 [PROJECTS] POST /api/projects request received');
+  console.log('🟣 [PROJECTS] Headers:', JSON.stringify({ authorization: req.headers.authorization?.slice(0, 20), userId: req.headers['x-user-id'] }));
   console.log('🟣 [PROJECTS] Request body:', JSON.stringify(req.body));
   
   try {
